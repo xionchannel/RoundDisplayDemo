@@ -2,8 +2,8 @@
 //#include <TFT_eSPI.h>                 // Include the graphics library (this includes the sprite functions)
 #include "ume.h"
 
-#define SCREEN_WIDTH 244
-#define SCREEN_HEIGHT 244
+#define SCREEN_WIDTH 244  // 画面端のゴミ回避のため少し大きめにする
+#define SCREEN_HEIGHT 244 // 画面端のゴミ回避のため少し大きめにする
 
 // Width and height of sprite
 #define SP_WIDTH  32
@@ -28,6 +28,10 @@ int32_t xmin, ymin, xmax, ymax;
 //uint16_t* tft_buffer; // backbuffer of sprite
 //bool buffer_loaded = false;
 
+bool respawn = true;
+int32_t respawn_time_max = 50;
+int32_t current_respawn_time = 50;
+
 void setup(void) {
   Serial.begin(115200);
 
@@ -35,17 +39,23 @@ void setup(void) {
   tft.setRotation(0);
   tft.fillScreen(TFT_BLACK);
 
-  bg.setColorDepth(4);
-  bg.createSprite(tft.width()/2, tft.height()/2);
-  bg.createPalette(ume_palette);
-  bg.fillRect(0, 0, bg.width(), bg.height(), BGCOLOR);
-  //bg.pushImage(32, 32, SP_WIDTH, SP_HEIGHT, (uint16_t *)ume);
-
   // Create a sprite of defined size
-  spr.setColorDepth(4);
+  TFT_eSprite spt = TFT_eSprite(&tft);
+  spt.setColorDepth(4);
+  spt.createSprite(SP_WIDTH, SP_HEIGHT);
+  spt.createPalette(ume_palette);
+  //spt.setPaletteColor(2, TFT_WHITE);
+  spt.pushImage(0, 0, SP_WIDTH, SP_HEIGHT, (uint16_t *)ume);
+  spr.setColorDepth(16);
   spr.createSprite(SP_WIDTH, SP_HEIGHT);
-  spr.createPalette(ume_palette);
-  spr.pushImage(0, 0, SP_WIDTH, SP_HEIGHT, (uint16_t *)ume);
+  pushSprite4ToSprite(&spt, &spr, 0, 0, 0);
+  //spr.fillRect(0,0,spr.width(), spr.height(), TFT_RED);
+
+  bg.setColorDepth(16);
+  bg.createSprite(tft.width()/2, tft.height()/2);
+  //bg.createPalette(ume_palette);
+  bg.fillRect(0, 0, bg.width(), bg.height(), spt.getPaletteColor(BGCOLOR));
+  //bg.pushImage(32, 32, SP_WIDTH, SP_HEIGHT, (uint16_t *)ume);
 
   for (uint8_t i=0; i<COUNT; i++)
   {
@@ -74,13 +84,20 @@ void setup(void) {
   tft.startWrite();
   for (uint8_t i=0; i<COUNT; i++)
   {
-    spr.pushToSprite(&bg, x[i], y[i], BGCOLOR);
+    spr.pushToSprite(&bg, x[i], y[i], TFT_TRANSPARENT);
   }
   pushSpriteScaled(&bg, &tft, 0, 0, tft.width()/2, tft.height()/2);
   tft.endWrite();
 }
 
 void loop() {
+  current_respawn_time--;
+  if (current_respawn_time == 0)
+  {
+    respawn = !respawn;
+    current_respawn_time = respawn_time_max;
+  }
+
   tft.startWrite();
   uint8_t i;
   #if false
@@ -121,12 +138,19 @@ void loop() {
       }
       else if (y[i] > ymax)
       {
-        y[i] = ymin;
-        x[i] = random(tft.width()/2 - SP_WIDTH);
-        spx[i] = random(MOVESPEED) + 1;
-        spy[i] = (random(MOVESPEED) + 1) * 2;
-        //yy[i] *= -1;
-        warp = true;
+        if (respawn)
+        {
+          y[i] = ymin;
+          x[i] = random(tft.width()/2 - SP_WIDTH);
+          spx[i] = random(MOVESPEED) + 1;
+          spy[i] = (random(MOVESPEED) + 1) * 2;
+          //yy[i] *= -1;
+          warp = true;
+        }
+        else
+        {
+          y[i] = ymax;
+        }
       }
 
       /*if (skipCol[i] == 0)
@@ -153,7 +177,10 @@ void loop() {
     //}
     //if (!warp)
     {
-      pushToSprite(&spr, &bg, x[i], y[i], 0);
+      //pushToSprite(&spr, &bg, x[i], y[i], 0);
+      spr.pushToSprite(&bg, x[i], y[i], TFT_TRANSPARENT);
+      //spr.pushToSprite(&bg, x[i], y[i]);
+      //spr.pushSprite(x[i]+60, y[i]+60);
     }
   }
   #if false
@@ -300,4 +327,24 @@ void pushToSprite(TFT_eSprite* src_, TFT_eSprite* dst_, const int32_t x, const i
     dst_->pushImage(x, y+i, src_->width(), 1, (uint16_t*)line_buffer);
   }
   #endif
+}
+
+// 4bitから16bitへSpriteをコピーする
+void pushSprite4ToSprite(TFT_eSprite* src_, TFT_eSprite* dst_, const int32_t x, const int32_t y, const uint8_t transp_)
+{
+  for (uint32_t i=0; i<src_->height(); i++)
+  {
+    for (uint32_t j=0; j<src_->width(); j++)
+    {
+      //uint8_t rp = src_->readPixelValue(j, i);
+      //uint16_t c = src_->getPaletteColor(rp);
+      uint16_t rp = src_->readPixel(j, i);
+      //rp = rp>>8 | rp<<8;
+      if (src_->getPaletteColor(transp_) == rp)
+      {
+        rp = TFT_TRANSPARENT;
+      }
+      dst_->drawPixel(x+j, y+i, rp);
+    }
+  }
 }
