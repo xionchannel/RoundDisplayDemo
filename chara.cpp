@@ -6,6 +6,7 @@ Chara::Chara(TFT_eSprite** sprites, int32_t count, TFT_eSprite *draw_target)
 {
   _pattern_count = count;
   _pattern_num = random(count);
+  _pattern_anim_time = 0;
   _spr = sprites;
   _draw_target = draw_target;
 
@@ -63,4 +64,12 @@ void Chara::MoveAndDraw(bool respawn)
   }
 
   (*_spr[_pattern_num]).pushToSprite(_draw_target, x, y, TFT_TRANSPARENT);
+  if (_pattern_anim_time == 0)
+  {
+    _pattern_num = (_pattern_num + 1) % _pattern_count;
+  }
+  _pattern_anim_time--;
+  if (_pattern_anim_time < 0) _pattern_anim_time = 3;
+  //(*_spr[_pattern_num]).setPivot(SP_WIDTH/2, SP_HEIGHT/2);
+  //(*_spr[_pattern_num]).pushRotated(_draw_target, random(360), TFT_TRANSPARENT);
 }

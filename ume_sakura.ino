@@ -15,7 +15,8 @@ uint16_t bg_color;
 #define COUNT 15
 Chara* sp[COUNT];
 
-TFT_eSprite* spr[2];
+#define ANIM_COUNT 16
+TFT_eSprite* spr[ANIM_COUNT];
 
 bool respawn = true;
 int32_t respawn_time_max = 50;
@@ -34,16 +35,23 @@ void setup(void) {
   spt.createSprite(SP_WIDTH, SP_HEIGHT);
   spt.createPalette(ume_palette);
   spt.pushImage(0, 0, SP_WIDTH, SP_HEIGHT, (uint16_t *)ume);
-  for (uint8_t i=0; i<2; i++)
+  for (uint8_t i=0; i<ANIM_COUNT; i++)
   {
     spr[i] = new TFT_eSprite(&tft);
     spr[i]->setColorDepth(16);
-    spr[i]->createSprite(SP_WIDTH, SP_HEIGHT);
-    if (i==1)
+    if (i==0)
     {
-      spt.setPaletteColor(2, TFT_WHITE);
+      spr[i]->createSprite(SP_WIDTH, SP_HEIGHT);
+      pushSprite4ToSprite(&spt, spr[i], 0, 0, 0);
     }
-    pushSprite4ToSprite(&spt, spr[i], 0, 0, 0);
+    else
+    {
+      //spt.setPaletteColor(2, TFT_WHITE);
+      spr[i]->createSprite(SP_WIDTH, SP_HEIGHT);
+      spr[i]->fillRect(0, 0, spr[i]->width(), spr[i]->height(), TFT_TRANSPARENT);
+      spr[0]->setPivot(spr[0]->width()/2, spr[0]->height()/2);
+      spr[0]->pushRotated(spr[i], ((double)i)/((double)ANIM_COUNT) * 360.0, TFT_TRANSPARENT);
+    }
   }
 
   bg_color = spt.getPaletteColor(BGCOLOR);
@@ -55,7 +63,7 @@ void setup(void) {
 
   for (uint8_t i=0; i<COUNT; i++)
   {
-    sp[i] = new Chara(&spr[0], 2, &bg);
+    sp[i] = new Chara(&spr[0], ANIM_COUNT, &bg);
   }
 
   delay(500);
