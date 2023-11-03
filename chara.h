@@ -21,12 +21,12 @@ public:
   float x;
   float y;
 
-  Chara(TFT_eSprite* sprite, int32_t count, TFT_eSprite *draw_target);
+  Chara(TFT_eSprite** sprites, int32_t count, TFT_eSprite *draw_target);
   void MoveAndDraw(bool respawn);
 
 private:
   TFT_eSprite* _draw_target;
-  TFT_eSprite* _spr;
+  TFT_eSprite** _spr;
   int32_t _pattern_count;
   int32_t _pattern_num;
   float _speed;

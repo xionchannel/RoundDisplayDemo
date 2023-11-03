@@ -2,10 +2,11 @@
 // chara control class
 #include "chara.h"
 
-Chara::Chara(TFT_eSprite* sprite, int32_t count, TFT_eSprite *draw_target)
+Chara::Chara(TFT_eSprite** sprites, int32_t count, TFT_eSprite *draw_target)
 {
   _pattern_count = count;
-  _spr = sprite;
+  _pattern_num = random(count);
+  _spr = sprites;
   _draw_target = draw_target;
 
   x = random(SCREEN_WIDTH/2 - SP_WIDTH);
@@ -23,7 +24,7 @@ void Chara::MoveAndDraw(bool respawn)
 {
   float _x1 = sin(_time_count1);
   float _x2 = sin(_time_count2);
-  _time_count1 += 0.1f * _speed;
+  _time_count1 += 0.025f * _speed;
   _time_count2 += 0.05f * _speed;
   if (_time_count1 > 6.28f) _time_count1 -= 6.28f;
   if (_time_count2 > 6.28f) _time_count2 -= 6.28f;
@@ -61,5 +62,5 @@ void Chara::MoveAndDraw(bool respawn)
     }
   }
 
-  _spr->pushToSprite(_draw_target, x, y, TFT_TRANSPARENT);
+  (*_spr[_pattern_num]).pushToSprite(_draw_target, x, y, TFT_TRANSPARENT);
 }
