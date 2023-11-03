@@ -1,7 +1,7 @@
 
 //#include <TFT_eSPI.h>                 // Include the graphics library (this includes the sprite functions)
 #include "ume.h"
-#include "flower.h"
+#include "chara.h"
 #include "utility.h"
 
 TFT_eSPI    tft = TFT_eSPI(SCREEN_WIDTH, SCREEN_HEIGHT);         // Create object "tft"
@@ -11,13 +11,14 @@ TFT_eSprite bg = TFT_eSprite(&tft); // bg buffer
 // the pointer is used by pushSprite() to push it onto the TFT
 
 #define BGCOLOR 4
+uint16_t bg_color;
 
-#define COUNT 20
-Flower* sp[COUNT];
+#define COUNT 15
+Chara* sp[COUNT];
 
 bool respawn = true;
 int32_t respawn_time_max = 50;
-int32_t current_respawn_time = 50;
+int32_t current_respawn_time = 25;
 
 void setup(void) {
   Serial.begin(115200);
@@ -36,15 +37,16 @@ void setup(void) {
   spr.setColorDepth(16);
   spr.createSprite(SP_WIDTH, SP_HEIGHT);
   pushSprite4ToSprite(&spt, &spr, 0, 0, 0);
+  bg_color = spt.getPaletteColor(BGCOLOR);
 
   // フレームバッファの初期化
   bg.setColorDepth(16);
   bg.createSprite(tft.width()/2, tft.height()/2);
-  bg.fillRect(0, 0, bg.width(), bg.height(), spt.getPaletteColor(BGCOLOR));
+  bg.fillRect(0, 0, bg.width(), bg.height(), bg_color);
 
   for (uint8_t i=0; i<COUNT; i++)
   {
-    sp[i] = new Flower(&spr, 1, &bg);
+    sp[i] = new Chara(&spr, 1, &bg);
   }
 
   delay(500);
@@ -59,14 +61,14 @@ void loop() {
   if (current_respawn_time == 0)
   {
     respawn = !respawn;
-    current_respawn_time = respawn_time_max;
+    current_respawn_time = random(respawn_time_max);
   }
 
   tft.startWrite();
-  bg.fillRect(0, 0, bg.width(), bg.height(), BGCOLOR);
+  bg.fillRect(0, 0, bg.width(), bg.height(), bg_color);
   for (uint8_t i=0; i<COUNT; i++)
   {
-    sp[i]->MoveAndDraw();
+    sp[i]->MoveAndDraw(respawn);
   }
   pushSpriteScaled(&bg, &tft, 0, 0, bg.width(), bg.height());
   tft.endWrite();

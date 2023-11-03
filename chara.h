@@ -1,5 +1,5 @@
-// flower.h
-// flower control class
+// chara.h
+// chara control class
 #include <TFT_eSPI.h>
 
 #define SCREEN_WIDTH 244  // 画面端のゴミ回避のため少し大きめにする
@@ -15,21 +15,23 @@
 
 #define MOVESPEED 3
 
-class Flower
+class Chara
 {
 public:
-  int32_t x;
-  int32_t y;
+  float x;
+  float y;
 
-  Flower(TFT_eSprite* sprite, int32_t count, TFT_eSprite *draw_target);
-  void MoveAndDraw();
+  Chara(TFT_eSprite* sprite, int32_t count, TFT_eSprite *draw_target);
+  void MoveAndDraw(bool respawn);
 
 private:
   TFT_eSprite* _draw_target;
   TFT_eSprite* _spr;
   int32_t _pattern_count;
   int32_t _pattern_num;
-  int32_t _accel_x;
-  int32_t _accel_y;
-  int32_t _time_count;
+  float _speed;
+  float _accel_x;
+  float _accel_y;
+  float _time_count1;
+  float _time_count2;
 };
