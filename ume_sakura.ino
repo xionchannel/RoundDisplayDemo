@@ -53,12 +53,12 @@ void setup(void) {
     spt.setColorDepth(4);
     spt.createSprite(SP_WIDTH, SP_HEIGHT);
     spt.createPalette(ground_palette);
-    createPaletteMultiply(&spt, 0.4f, 0.2f, 0.4f);
+    Utility::createPaletteMultiply(&spt, 0.4f, 0.2f, 0.4f);
     spt.pushImage(0, 0, SP_WIDTH, SP_HEIGHT, (uint16_t*)ground_graphic);
 
     spr_bg.setColorDepth(16);
     spr_bg.createSprite(SP_WIDTH, SP_HEIGHT);
-    pushSprite4ToSprite(&spt, &spr_bg, 0, 0);
+    Utility::pushSprite4ToSprite(&spt, &spr_bg, 0, 0);
   }
 
   // 紅梅スプライトの初期化
@@ -74,7 +74,7 @@ void setup(void) {
       if (i==0)
       {
         spr_ume1[i]->createSprite(SP_WIDTH, SP_HEIGHT);
-        pushSprite4ToSprite(&spt, spr_ume1[i], 0, 0, 0);
+        Utility::pushSprite4ToSprite(&spt, spr_ume1[i], 0, 0, 0);
       }
       else
       {
@@ -101,7 +101,7 @@ void setup(void) {
       if (i==0)
       {
         spr_ume2[i]->createSprite(SP_WIDTH, SP_HEIGHT);
-        pushSprite4ToSprite(&spt, spr_ume2[i], 0, 0, 0);
+        Utility::pushSprite4ToSprite(&spt, spr_ume2[i], 0, 0, 0);
       }
       else
       {
@@ -154,11 +154,14 @@ void loop() {
   {
     sp[i]->MoveAndDraw(respawn);
   }
-  //spr_logo.pushToSprite(&bg, ((SCREEN_WIDTH/2)-LOGO_WIDTH)/2+1, ((SCREEN_HEIGHT/2)-LOGO_HEIGHT)/2, TFT_TRANSPARENT);
-  spr_logo.createPalette(logo_palette);
-  createPaletteMultiply(&spr_logo, random(10.0)/10.0, random(10.0)/10.0, random(10.0)/10.0);
-  pushSprite4ToSpriteMasked(&spr_logo, &bg, ((SCREEN_WIDTH/2)-LOGO_WIDTH)/2+1, ((SCREEN_HEIGHT/2)-LOGO_HEIGHT)/2, 0);
-  pushSpriteScaled(&bg, &tft, 0, 0, bg.width(), bg.height());
+  
+  // logo
+  uint16_t c = tft.color565(random(2)*255, random(2)*255, random(2)*255);
+  if (c == 0) c = TFT_RED;
+  c = tft.alphaBlend(128, c, TFT_WHITE);
+  //Utility::pushSprite4ToSpriteBlended(&spr_logo, &bg, ((SCREEN_WIDTH/2)-LOGO_WIDTH)/2+1, ((SCREEN_HEIGHT/2)-LOGO_HEIGHT)/2, c, 0.5f);
+  
+  Utility::pushSpriteScaled(&bg, &tft, 0, 0, bg.width(), bg.height());
   tft.endWrite();
 }
 
