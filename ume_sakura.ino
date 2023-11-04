@@ -1,6 +1,6 @@
 
 //#include <TFT_eSPI.h>                 // Include the graphics library (this includes the sprite functions)
-#include "ume.h"
+#include "sprites.h"
 #include "chara.h"
 #include "utility.h"
 
@@ -9,14 +9,16 @@ TFT_eSPI    tft = TFT_eSPI(SCREEN_WIDTH, SCREEN_HEIGHT);         // Create objec
 TFT_eSprite bg = TFT_eSprite(&tft); // bg buffer
 // the pointer is used by pushSprite() to push it onto the TFT
 
-#define BGCOLOR 4
-uint16_t bg_color;
+uint16_t bg_color = TFT_BLACK;
 
-#define COUNT 15
+#define COUNT 10
 Chara* sp[COUNT];
 
-#define ANIM_COUNT 16
-TFT_eSprite* spr[ANIM_COUNT];
+#define ANIM_COUNT 32
+TFT_eSprite* spr_ume1[ANIM_COUNT];
+TFT_eSprite* spr_ume2[ANIM_COUNT];
+TFT_eSprite spr_bg = TFT_eSprite(&tft);
+TFT_eSprite spr_logo = TFT_eSprite(&tft);
 
 bool respawn = true;
 int32_t respawn_time_max = 50;
@@ -29,41 +31,105 @@ void setup(void) {
   tft.setRotation(0);
   tft.fillScreen(TFT_BLACK);
 
-  // スプライトの初期化
   TFT_eSprite spt = TFT_eSprite(&tft);
-  spt.setColorDepth(4);
-  spt.createSprite(SP_WIDTH, SP_HEIGHT);
-  spt.createPalette(ume_palette);
-  spt.pushImage(0, 0, SP_WIDTH, SP_HEIGHT, (uint16_t *)ume);
-  for (uint8_t i=0; i<ANIM_COUNT; i++)
+  // ロゴの初期化
   {
-    spr[i] = new TFT_eSprite(&tft);
-    spr[i]->setColorDepth(16);
-    if (i==0)
+    spt.setColorDepth(4);
+    spt.createSprite(LOGO_WIDTH, LOGO_HEIGHT);
+    spt.createPalette(logo_palette);
+    spt.pushImage(0, 0, LOGO_WIDTH, LOGO_HEIGHT, (uint16_t*)logo_graphic);
+
+    spr_logo.setColorDepth(4);
+    spr_logo.createSprite(LOGO_WIDTH, LOGO_HEIGHT);
+    //pushSprite4ToSprite(&spt, &spr_logo, 0, 0, 0);
+    spr_logo.createPalette(logo_palette);
+    spr_logo.pushImage(0, 0, LOGO_WIDTH, LOGO_HEIGHT, (uint16_t*)logo_graphic);
+
+    spt.deleteSprite();
+  }
+
+  // 背景の初期化
+  {
+    spt.setColorDepth(4);
+    spt.createSprite(SP_WIDTH, SP_HEIGHT);
+    spt.createPalette(ground_palette);
+    createPaletteMultiply(&spt, 0.4f, 0.2f, 0.4f);
+    spt.pushImage(0, 0, SP_WIDTH, SP_HEIGHT, (uint16_t*)ground_graphic);
+
+    spr_bg.setColorDepth(16);
+    spr_bg.createSprite(SP_WIDTH, SP_HEIGHT);
+    pushSprite4ToSprite(&spt, &spr_bg, 0, 0);
+  }
+
+  // 紅梅スプライトの初期化
+  {
+    spt.setColorDepth(4);
+    spt.createSprite(SP_WIDTH, SP_HEIGHT);
+    spt.createPalette(ume1_palette);
+    spt.pushImage(0, 0, SP_WIDTH, SP_HEIGHT, (uint16_t*)ume1_graphic);
+    for (uint8_t i=0; i<ANIM_COUNT; i++)
     {
-      spr[i]->createSprite(SP_WIDTH, SP_HEIGHT);
-      pushSprite4ToSprite(&spt, spr[i], 0, 0, 0);
-    }
-    else
-    {
-      //spt.setPaletteColor(2, TFT_WHITE);
-      spr[i]->createSprite(SP_WIDTH, SP_HEIGHT);
-      spr[i]->fillRect(0, 0, spr[i]->width(), spr[i]->height(), TFT_TRANSPARENT);
-      spr[0]->setPivot(spr[0]->width()/2, spr[0]->height()/2);
-      spr[0]->pushRotated(spr[i], ((double)i)/((double)ANIM_COUNT) * 360.0, TFT_TRANSPARENT);
+      spr_ume1[i] = new TFT_eSprite(&tft);
+      spr_ume1[i]->setColorDepth(16);
+      if (i==0)
+      {
+        spr_ume1[i]->createSprite(SP_WIDTH, SP_HEIGHT);
+        pushSprite4ToSprite(&spt, spr_ume1[i], 0, 0, 0);
+      }
+      else
+      {
+        spr_ume1[i]->createSprite(SP_WIDTH, SP_HEIGHT);
+        spr_ume1[i]->fillRect(0, 0, SP_WIDTH, SP_HEIGHT, TFT_TRANSPARENT);
+        spr_ume1[0]->setPivot(SP_WIDTH/2, SP_HEIGHT/2);
+        spr_ume1[0]->pushRotated(spr_ume1[i], ((double)i)/((double)ANIM_COUNT) * 360.0, TFT_TRANSPARENT);
+      }
+      //spt.deleteSprite();
     }
   }
 
-  bg_color = spt.getPaletteColor(BGCOLOR);
+  // 白梅スプライトの初期化
+  {
+    //TFT_eSprite spt = TFT_eSprite(&tft);
+    //spt.setColorDepth(4);
+    //spt.createSprite(SP_WIDTH, SP_HEIGHT);
+    spt.createPalette(ume2_palette);
+    //spt.pushImage(0, 0, SP_WIDTH, SP_HEIGHT, (uint16_t*)ume2_graphic);
+    for (uint8_t i=0; i<ANIM_COUNT; i++)
+    {
+      spr_ume2[i] = new TFT_eSprite(&tft);
+      spr_ume2[i]->setColorDepth(16);
+      if (i==0)
+      {
+        spr_ume2[i]->createSprite(SP_WIDTH, SP_HEIGHT);
+        pushSprite4ToSprite(&spt, spr_ume2[i], 0, 0, 0);
+      }
+      else
+      {
+        spr_ume2[i]->createSprite(SP_WIDTH, SP_HEIGHT);
+        spr_ume2[i]->fillRect(0, 0, SP_WIDTH, SP_HEIGHT, TFT_TRANSPARENT);
+        spr_ume2[0]->setPivot(SP_WIDTH/2, SP_HEIGHT/2);
+        spr_ume2[0]->pushRotated(spr_ume2[i], ((double)i)/((double)ANIM_COUNT) * 360.0, TFT_TRANSPARENT);
+      }
+      spt.deleteSprite();
+    }
+  }
 
   // フレームバッファの初期化
   bg.setColorDepth(16);
   bg.createSprite(tft.width()/2, tft.height()/2);
-  bg.fillRect(0, 0, bg.width(), bg.height(), bg_color);
+  //bg.fillRect(0, 0, bg.width(), bg.height(), bg_color);
+  draw_bg(&bg);
 
   for (uint8_t i=0; i<COUNT; i++)
   {
-    sp[i] = new Chara(&spr[0], ANIM_COUNT, &bg);
+    if (i%2==0)
+    {
+      sp[i] = new Chara(&spr_ume1[0], ANIM_COUNT, &bg);
+    }
+    else
+    {
+      sp[i] = new Chara(&spr_ume2[0], ANIM_COUNT, &bg);
+    }
   }
 
   delay(500);
@@ -75,18 +141,34 @@ void setup(void) {
 
 void loop() {
   current_respawn_time--;
-  if (current_respawn_time == 0)
+  if (current_respawn_time <= 0)
   {
     respawn = !respawn;
-    current_respawn_time = random(respawn_time_max);
+    current_respawn_time = random(respawn_time_max)+1;
   }
 
   tft.startWrite();
-  bg.fillRect(0, 0, bg.width(), bg.height(), bg_color);
+  //bg.fillRect(0, 0, bg.width(), bg.height(), bg_color);
+  draw_bg(&bg);
   for (uint8_t i=0; i<COUNT; i++)
   {
     sp[i]->MoveAndDraw(respawn);
   }
+  //spr_logo.pushToSprite(&bg, ((SCREEN_WIDTH/2)-LOGO_WIDTH)/2+1, ((SCREEN_HEIGHT/2)-LOGO_HEIGHT)/2, TFT_TRANSPARENT);
+  spr_logo.createPalette(logo_palette);
+  createPaletteMultiply(&spr_logo, random(10.0)/10.0, random(10.0)/10.0, random(10.0)/10.0);
+  pushSprite4ToSpriteMasked(&spr_logo, &bg, ((SCREEN_WIDTH/2)-LOGO_WIDTH)/2+1, ((SCREEN_HEIGHT/2)-LOGO_HEIGHT)/2, 0);
   pushSpriteScaled(&bg, &tft, 0, 0, bg.width(), bg.height());
   tft.endWrite();
+}
+
+void draw_bg(TFT_eSprite *target)
+{
+  for (uint8_t i=0; i<=(SCREEN_HEIGHT/2)/SP_HEIGHT; i++)
+  {
+    for (uint8_t j=0; j<=(SCREEN_WIDTH/2)/SP_WIDTH; j++)
+    {
+      spr_bg.pushToSprite(target, j*SP_WIDTH, i*SP_HEIGHT);
+    }
+  }
 }

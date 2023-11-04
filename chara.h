@@ -30,6 +30,7 @@ private:
   int32_t _pattern_count;
   int32_t _pattern_num;
   int32_t _pattern_anim_time;
+  int32_t _pattern_anim_time_max;
   float _speed;
   float _accel_x;
   float _accel_y;

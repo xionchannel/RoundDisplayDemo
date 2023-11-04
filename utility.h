@@ -108,15 +108,68 @@ void pushSprite4ToSprite(TFT_eSprite* src_, TFT_eSprite* dst_, const int32_t x, 
   {
     for (uint32_t j=0; j<src_->width(); j++)
     {
-      //uint8_t rp = src_->readPixelValue(j, i);
-      //uint16_t c = src_->getPaletteColor(rp);
       uint16_t rp = src_->readPixel(j, i);
-      //rp = rp>>8 | rp<<8;
       if (src_->getPaletteColor(transp_) == rp)
       {
         rp = TFT_TRANSPARENT;
       }
       dst_->drawPixel(x+j, y+i, rp);
     }
+  }
+}
+
+// 4bitから16bitへSpriteをコピーする
+void pushSprite4ToSpriteMasked(TFT_eSprite* src_, TFT_eSprite* dst_, const int32_t x, const int32_t y, const uint8_t transp_)
+{
+  for (uint32_t i=0; i<src_->height(); i++)
+  {
+    for (uint32_t j=0; j<src_->width(); j++)
+    {
+      uint16_t rp = src_->readPixel(j, i);
+      if (src_->getPaletteColor(transp_) == rp)
+      {
+        continue;
+      }
+      dst_->drawPixel(x+j, y+i, rp);
+    }
+  }
+}
+
+// 4bitから16bitへSpriteをコピーする(透明色なし)
+void pushSprite4ToSprite(TFT_eSprite* src_, TFT_eSprite* dst_, const int32_t x, const int32_t y)
+{
+  for (uint32_t i=0; i<src_->height(); i++)
+  {
+    for (uint32_t j=0; j<src_->width(); j++)
+    {
+      uint16_t rp = src_->readPixel(j, i);
+      dst_->drawPixel(x+j, y+i, rp);
+    }
+  }
+}
+
+// パレットカラーを暗くする
+void createPaletteMultiply(TFT_eSprite* target_, const float r_, const float g_, const float b_)
+{
+  for (uint8_t i=0; i<16; i++)
+  {
+    uint32_t color888;
+    uint16_t color565 = target_->getPaletteColor(i);
+    {
+      uint8_t r = (color565 >> 8) & 0xF8; r |= (r >> 5);
+      uint8_t g = (color565 >> 3) & 0xFC; g |= (g >> 6);
+      uint8_t b = (color565 << 3) & 0xF8; b |= (b >> 5);
+      r *= r_;
+      g *= g_;
+      b *= b_;
+      color888 = ((uint32_t)r << 16) | ((uint32_t)g << 8) | ((uint32_t)b << 0);
+    }
+    {
+      uint16_t r = (color888 >> 8) & 0xF800;
+      uint16_t g = (color888 >> 5) & 0x07E0;
+      uint16_t b = (color888 >> 3) & 0x001F;
+      color565 = (r | g | b);
+    }
+    target_->setPaletteColor(i, color565);
   }
 }
