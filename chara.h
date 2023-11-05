@@ -1,6 +1,10 @@
 // chara.h
 // chara control class
 #include <TFT_eSPI.h>
+#include "Utility.h"
+
+#ifndef _CHARA_
+#define _CHARA_
 
 #define SCREEN_WIDTH 244  // 画面端のゴミ回避のため少し大きめにする
 #define SCREEN_HEIGHT 244 // 画面端のゴミ回避のため少し大きめにする
@@ -22,7 +26,10 @@ public:
   float y;
 
   Chara(TFT_eSprite** sprites, int32_t count, TFT_eSprite *draw_target);
-  void MoveAndDraw(bool respawn);
+  void SetPatterns(TFT_eSprite** sprites, int32_t count);
+  bool MoveAndDraw(bool respawn);
+
+  static TFT_eSprite** CreateFlowerSprites(TFT_eSPI *tft, const uint16_t* palette, const uint16_t* graphic, const uint8_t width, const uint8_t height, const uint8_t count);
 
 private:
   TFT_eSprite* _draw_target;
@@ -37,3 +44,5 @@ private:
   float _time_count1;
   float _time_count2;
 };
+
+#endif

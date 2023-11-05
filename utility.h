@@ -3,6 +3,9 @@
 
 #include <TFT_eSPI.h>
 
+#ifndef _UTILITY_
+#define _UTILITY_
+
 class Utility
 {
 public:
@@ -18,3 +21,5 @@ public:
   static void createPaletteMultiply(TFT_eSprite* target_, const float r_, const float g_, const float b_);
 
 };
+
+#endif

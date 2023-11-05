@@ -4,10 +4,9 @@
 #include "chara.h"
 #include "utility.h"
 
-TFT_eSPI    tft = TFT_eSPI(SCREEN_WIDTH, SCREEN_HEIGHT);         // Create object "tft"
+TFT_eSPI tft = TFT_eSPI(SCREEN_WIDTH, SCREEN_HEIGHT);         // Create object "tft"
 
 TFT_eSprite bg = TFT_eSprite(&tft); // bg buffer
-// the pointer is used by pushSprite() to push it onto the TFT
 
 uint16_t bg_color = TFT_BLACK;
 
@@ -15,14 +14,23 @@ uint16_t bg_color = TFT_BLACK;
 Chara* sp[COUNT];
 
 #define ANIM_COUNT 32
-TFT_eSprite* spr_ume1[ANIM_COUNT];
-TFT_eSprite* spr_ume2[ANIM_COUNT];
+TFT_eSprite** spr_ume1;
+TFT_eSprite** spr_ume2;
 TFT_eSprite spr_bg = TFT_eSprite(&tft);
 TFT_eSprite spr_logo = TFT_eSprite(&tft);
 
 bool respawn = true;
 int32_t respawn_time_max = 50;
 int32_t current_respawn_time = 25;
+
+enum Sequence
+{
+  RedUme = 0,
+  WhiteUme,
+  Max
+};
+enum Sequence current_sequence = RedUme;
+
 
 void setup(void) {
   Serial.begin(115200);
@@ -31,9 +39,9 @@ void setup(void) {
   tft.setRotation(0);
   tft.fillScreen(TFT_BLACK);
 
-  TFT_eSprite spt = TFT_eSprite(&tft);
   // ロゴの初期化
   {
+    TFT_eSprite spt = TFT_eSprite(&tft);
     spt.setColorDepth(4);
     spt.createSprite(LOGO_WIDTH, LOGO_HEIGHT);
     spt.createPalette(logo_palette);
@@ -41,7 +49,6 @@ void setup(void) {
 
     spr_logo.setColorDepth(4);
     spr_logo.createSprite(LOGO_WIDTH, LOGO_HEIGHT);
-    //pushSprite4ToSprite(&spt, &spr_logo, 0, 0, 0);
     spr_logo.createPalette(logo_palette);
     spr_logo.pushImage(0, 0, LOGO_WIDTH, LOGO_HEIGHT, (uint16_t*)logo_graphic);
 
@@ -50,6 +57,7 @@ void setup(void) {
 
   // 背景の初期化
   {
+    TFT_eSprite spt = TFT_eSprite(&tft);
     spt.setColorDepth(4);
     spt.createSprite(SP_WIDTH, SP_HEIGHT);
     spt.createPalette(ground_palette);
@@ -59,60 +67,15 @@ void setup(void) {
     spr_bg.setColorDepth(16);
     spr_bg.createSprite(SP_WIDTH, SP_HEIGHT);
     Utility::pushSprite4ToSprite(&spt, &spr_bg, 0, 0);
+
+    spt.deleteSprite();
   }
 
   // 紅梅スプライトの初期化
-  {
-    spt.setColorDepth(4);
-    spt.createSprite(SP_WIDTH, SP_HEIGHT);
-    spt.createPalette(ume1_palette);
-    spt.pushImage(0, 0, SP_WIDTH, SP_HEIGHT, (uint16_t*)ume1_graphic);
-    for (uint8_t i=0; i<ANIM_COUNT; i++)
-    {
-      spr_ume1[i] = new TFT_eSprite(&tft);
-      spr_ume1[i]->setColorDepth(16);
-      if (i==0)
-      {
-        spr_ume1[i]->createSprite(SP_WIDTH, SP_HEIGHT);
-        Utility::pushSprite4ToSprite(&spt, spr_ume1[i], 0, 0, 0);
-      }
-      else
-      {
-        spr_ume1[i]->createSprite(SP_WIDTH, SP_HEIGHT);
-        spr_ume1[i]->fillRect(0, 0, SP_WIDTH, SP_HEIGHT, TFT_TRANSPARENT);
-        spr_ume1[0]->setPivot(SP_WIDTH/2, SP_HEIGHT/2);
-        spr_ume1[0]->pushRotated(spr_ume1[i], ((double)i)/((double)ANIM_COUNT) * 360.0, TFT_TRANSPARENT);
-      }
-      //spt.deleteSprite();
-    }
-  }
+  spr_ume1 = Chara::CreateFlowerSprites(&tft, ume1_palette, (uint16_t*)ume1_graphic, SP_WIDTH, SP_HEIGHT, ANIM_COUNT);
 
   // 白梅スプライトの初期化
-  {
-    //TFT_eSprite spt = TFT_eSprite(&tft);
-    //spt.setColorDepth(4);
-    //spt.createSprite(SP_WIDTH, SP_HEIGHT);
-    spt.createPalette(ume2_palette);
-    //spt.pushImage(0, 0, SP_WIDTH, SP_HEIGHT, (uint16_t*)ume2_graphic);
-    for (uint8_t i=0; i<ANIM_COUNT; i++)
-    {
-      spr_ume2[i] = new TFT_eSprite(&tft);
-      spr_ume2[i]->setColorDepth(16);
-      if (i==0)
-      {
-        spr_ume2[i]->createSprite(SP_WIDTH, SP_HEIGHT);
-        Utility::pushSprite4ToSprite(&spt, spr_ume2[i], 0, 0, 0);
-      }
-      else
-      {
-        spr_ume2[i]->createSprite(SP_WIDTH, SP_HEIGHT);
-        spr_ume2[i]->fillRect(0, 0, SP_WIDTH, SP_HEIGHT, TFT_TRANSPARENT);
-        spr_ume2[0]->setPivot(SP_WIDTH/2, SP_HEIGHT/2);
-        spr_ume2[0]->pushRotated(spr_ume2[i], ((double)i)/((double)ANIM_COUNT) * 360.0, TFT_TRANSPARENT);
-      }
-      spt.deleteSprite();
-    }
-  }
+  spr_ume2 = Chara::CreateFlowerSprites(&tft, ume2_palette, (uint16_t*)ume1_graphic, SP_WIDTH, SP_HEIGHT, ANIM_COUNT);
 
   // フレームバッファの初期化
   bg.setColorDepth(16);
@@ -122,14 +85,7 @@ void setup(void) {
 
   for (uint8_t i=0; i<COUNT; i++)
   {
-    if (i%2==0)
-    {
-      sp[i] = new Chara(&spr_ume1[0], ANIM_COUNT, &bg);
-    }
-    else
-    {
-      sp[i] = new Chara(&spr_ume2[0], ANIM_COUNT, &bg);
-    }
+    sp[i] = new Chara(&spr_ume1[0], ANIM_COUNT, &bg);
   }
 
   delay(500);
@@ -145,6 +101,9 @@ void loop() {
   {
     respawn = !respawn;
     current_respawn_time = random(respawn_time_max)+1;
+
+    if (respawn)
+      current_sequence = static_cast<Sequence>((static_cast<uint8_t>(current_sequence) + 1) % static_cast<uint8_t>(Sequence::Max));
   }
 
   tft.startWrite();
@@ -152,7 +111,14 @@ void loop() {
   draw_bg(&bg);
   for (uint8_t i=0; i<COUNT; i++)
   {
-    sp[i]->MoveAndDraw(respawn);
+    bool out_of_screen = sp[i]->MoveAndDraw(respawn);
+    if (!respawn && out_of_screen)
+    {
+      if (current_sequence == Sequence::RedUme)
+        sp[i]->SetPatterns(&spr_ume1[0], ANIM_COUNT);
+      else
+        sp[i]->SetPatterns(&spr_ume2[0], ANIM_COUNT);
+    }
   }
   
   // logo
