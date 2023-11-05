@@ -64,6 +64,7 @@ Chara::Chara(TFT_eSprite** sprites, int32_t count, TFT_eSprite *draw_target)
 
   _draw_target = draw_target;
 
+  active = true;
   x = random(SCREEN_WIDTH/2 - SP_WIDTH);
   y = SCREEN_YMIN;
   _speed = random(MOVESPEED) + 1;
@@ -89,6 +90,9 @@ void Chara::SetPatterns(TFT_eSprite** sprites, int32_t count)
 bool Chara::MoveAndDraw(bool respawn)
 {
   bool result = false;
+  bool out_of_screen = false;
+  if (!active) return true;
+
   float _x1 = sin(_time_count1);
   float _x2 = sin(_time_count2);
   _time_count1 += 0.025f * _speed;
@@ -101,18 +105,23 @@ bool Chara::MoveAndDraw(bool respawn)
   if (x < SCREEN_XMIN)
   {
     x = SCREEN_XMAX;
+    out_of_screen = true;
   }
   else if (x > SCREEN_XMAX)
   {
     x = SCREEN_XMIN;
+    out_of_screen = true;
   }
   if (y < SCREEN_YMIN)
   {
     y = SCREEN_YMIN;
     _accel_y *= -1;
+    out_of_screen = true;
   }
   else if (y > SCREEN_YMAX)
   {
+    result = true;
+    out_of_screen = true;
     if (respawn)
     {
       y = SCREEN_YMIN;
@@ -126,11 +135,14 @@ bool Chara::MoveAndDraw(bool respawn)
     else
     {
       y = SCREEN_YMAX;
-      result = true;
     }
   }
 
-  (_spr[_pattern_num])->pushToSprite(_draw_target, x, y, TFT_TRANSPARENT);
+  if (!out_of_screen)
+  {
+    (_spr[_pattern_num])->pushToSprite(_draw_target, x, y, TFT_TRANSPARENT);
+  }
+
   if (_pattern_anim_time <= 0)
   {
     _pattern_num = (_pattern_num + 1) % _pattern_count;

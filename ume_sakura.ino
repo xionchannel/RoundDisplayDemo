@@ -10,7 +10,7 @@ TFT_eSprite bg = TFT_eSprite(&tft); // bg buffer
 
 uint16_t bg_color = TFT_BLACK;
 
-#define COUNT 10
+#define COUNT 30
 Chara* sp[COUNT];
 
 #define ANIM_COUNT 32
@@ -20,9 +20,8 @@ TFT_eSprite** spr_sakura1;
 TFT_eSprite spr_bg = TFT_eSprite(&tft);
 TFT_eSprite spr_logo = TFT_eSprite(&tft);
 
-bool respawn = true;
-int32_t respawn_time_max = 50;
-int32_t current_respawn_time = 25;
+int32_t sequence_time_max = 200;
+int32_t current_sequence_time = 50;
 
 enum Sequence
 {
@@ -90,7 +89,15 @@ void setup(void) {
 
   for (uint8_t i=0; i<COUNT; i++)
   {
-    sp[i] = new Chara(&spr_ume1[0], ANIM_COUNT, &bg);
+    if (i<10)
+    {
+      sp[i] = new Chara(&spr_ume1[0], ANIM_COUNT, &bg);
+    }
+    else
+    {
+      sp[i] = new Chara(&spr_sakura1[0], SAKURA_COUNT, &bg);
+      sp[i]->active = false;
+    }
   }
 
   delay(500);
@@ -101,14 +108,11 @@ void setup(void) {
 }
 
 void loop() {
-  current_respawn_time--;
-  if (current_respawn_time <= 0)
+  current_sequence_time--;
+  if (current_sequence_time <= 0)
   {
-    respawn = !respawn;
-    current_respawn_time = random(respawn_time_max)+1;
-
-    if (respawn)
-      current_sequence = static_cast<Sequence>((static_cast<uint8_t>(current_sequence) + 1) % static_cast<uint8_t>(Sequence::Max));
+    current_sequence_time = sequence_time_max;
+    current_sequence = static_cast<Sequence>((static_cast<uint8_t>(current_sequence) + 1) % static_cast<uint8_t>(Sequence::Max));
   }
 
   tft.startWrite();
@@ -116,15 +120,30 @@ void loop() {
   draw_bg(&bg);
   for (uint8_t i=0; i<COUNT; i++)
   {
-    bool out_of_screen = sp[i]->MoveAndDraw(respawn);
-    if (!respawn && out_of_screen)
+    if (!sp[i]->active) {
+      if (current_sequence == Sequence::Sakura)
+      {
+        sp[i]->active = true;
+      }
+    }
+
+    bool out_of_screen = sp[i]->MoveAndDraw(true);
+    if (out_of_screen)
     {
       if (current_sequence == Sequence::RedUme)
-        sp[i]->SetPatterns(&spr_ume1[0], ANIM_COUNT);
+      {
+        if (i>=10) sp[i]->active = false;
+        else sp[i]->SetPatterns(&spr_ume1[0], ANIM_COUNT);
+      }
       else if (current_sequence == Sequence::WhiteUme)
-        sp[i]->SetPatterns(&spr_ume2[0], ANIM_COUNT);
+      {
+        if (i>=10) sp[i]->active = false;
+        else sp[i]->SetPatterns(&spr_ume2[0], ANIM_COUNT);
+      }
       else
+      {
         sp[i]->SetPatterns(&spr_sakura1[0], SAKURA_COUNT);
+      }
     }
   }
   
