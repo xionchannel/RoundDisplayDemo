@@ -25,13 +25,16 @@ public:
   float x;
   float y;
   bool active;
+  bool out_of_screen;
 
   Chara(TFT_eSprite** sprites, int32_t count, TFT_eSprite *draw_target);
   void SetPatterns(TFT_eSprite** sprites, int32_t count);
-  bool MoveAndDraw(bool respawn);
+  bool Move(bool respawn);
+  void Draw();
 
-  static TFT_eSprite** CreateFlowerSprites(TFT_eSPI *tft, const uint16_t* palette, const uint16_t* graphic, const uint8_t width, const uint8_t height, const uint8_t count);
-  static TFT_eSprite** CreatePatternSprites(TFT_eSPI *tft, const uint16_t* palette, const uint16_t* graphic, const uint8_t width, const uint8_t height, const uint8_t xcount, const uint8_t ycount);
+  static TFT_eSprite** CreateFlowerSprites(TFT_eSPI *tft, const uint16_t* palette, const uint16_t* graphic, const uint16_t transp, const uint16_t width, const uint16_t height, const uint16_t count);
+  static TFT_eSprite** CreatePatternSprites(TFT_eSPI *tft, const uint16_t* palette, const uint16_t* graphic, const uint16_t transp, const uint16_t width, const uint16_t height, const uint16_t xcount, const uint16_t ycount);
+  static TFT_eSprite** CreateRotPatternSprites(TFT_eSPI *tft, const uint16_t* palette, const uint16_t* graphic, const uint16_t transp, const uint16_t width, const uint16_t height, const uint16_t xcount, const uint16_t ycount, const uint16_t anim_count);
 
 private:
   TFT_eSprite* _draw_target;

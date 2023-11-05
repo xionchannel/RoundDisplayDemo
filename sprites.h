@@ -8,6 +8,12 @@ extern const uint8_t ume1_graphic[] PROGMEM;
 extern const uint16_t ume2_palette[];
 //extern const uint8_t ume2_graphic[] PROGMEM;
 
+#define HIPPO_X_COUNT 4
+#define HIPPO_Y_COUNT 2
+#define HIPPO_COUNT (HIPPO_X_COUNT * HIPPO_Y_COUNT)
+extern const uint16_t hippo_palette[];
+extern const uint8_t hippo_graphic[] PROGMEM;
+
 #define SAKURA_WIDTH 16
 #define SAKURA_HEIGHT 16
 #define SAKURA_X_COUNT 4
