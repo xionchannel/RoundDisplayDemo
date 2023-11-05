@@ -152,6 +152,23 @@ void Utility::pushSprite4ToSprite(TFT_eSprite* src_, TFT_eSprite* dst_, const in
 }
 
 // 4bitから16bitへSpriteをコピーする
+void Utility::pushSprite4ToSpriteClip(TFT_eSprite* src_, TFT_eSprite* dst_, const int32_t xst, const int32_t yst, const int32_t xed, const int32_t yed, const int32_t x, const int32_t y, const uint8_t transp_)
+{
+  for (uint32_t i=0; i<yed-yst+1; i++)
+  {
+    for (uint32_t j=0; j<xed-xst+1; j++)
+    {
+      uint16_t rp = src_->readPixel(j+xst, i+yst);
+      if (src_->getPaletteColor(transp_) == rp)
+      {
+        rp = TFT_TRANSPARENT;
+      }
+      dst_->drawPixel(x+j, y+i, rp);
+    }
+  }
+}
+
+// 4bitから16bitへSpriteをコピーする
 void Utility::pushSprite4ToSpriteMasked(TFT_eSprite* src_, TFT_eSprite* dst_, const int32_t x, const int32_t y, const uint8_t transp_)
 {
   for (uint32_t i=0; i<src_->height(); i++)

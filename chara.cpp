@@ -32,6 +32,31 @@ TFT_eSprite** Chara::CreateFlowerSprites(TFT_eSPI *tft, const uint16_t* palette,
   return &spr[0];
 }
 
+// パターンチェンジ用スプライトの生成
+TFT_eSprite** Chara::CreatePatternSprites(TFT_eSPI *tft, const uint16_t* palette, const uint16_t* graphic, const uint8_t width, const uint8_t height, const uint8_t xcount, const uint8_t ycount)
+{
+  TFT_eSprite** spr = new TFT_eSprite*[xcount * ycount];
+  TFT_eSprite spt = TFT_eSprite(tft);
+  spt.setColorDepth(4);
+  spt.createSprite(width * xcount, height * ycount);
+  spt.createPalette(palette);
+  spt.pushImage(0, 0, width * xcount, height * ycount, graphic);
+  uint8_t i=0;
+  for (uint8_t y=0; y<ycount; y++)
+  {
+    for (uint8_t x=0; x<xcount; x++)
+    {
+      spr[i] = new TFT_eSprite(tft);
+      spr[i]->setColorDepth(16);
+      spr[i]->createSprite(width, height);
+      Utility::pushSprite4ToSpriteClip(&spt, spr[i], x*width, y*height, x*width+width-1, y*height+height-1, 0, 0, 0);
+      i++;
+    }
+  }
+  spt.deleteSprite();
+  return &spr[0];
+}
+
 // 初期化
 Chara::Chara(TFT_eSprite** sprites, int32_t count, TFT_eSprite *draw_target)
 {

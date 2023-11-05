@@ -30,6 +30,7 @@ public:
   bool MoveAndDraw(bool respawn);
 
   static TFT_eSprite** CreateFlowerSprites(TFT_eSPI *tft, const uint16_t* palette, const uint16_t* graphic, const uint8_t width, const uint8_t height, const uint8_t count);
+  static TFT_eSprite** CreatePatternSprites(TFT_eSPI *tft, const uint16_t* palette, const uint16_t* graphic, const uint8_t width, const uint8_t height, const uint8_t xcount, const uint8_t ycount);
 
 private:
   TFT_eSprite* _draw_target;

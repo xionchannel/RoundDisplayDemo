@@ -16,6 +16,7 @@ Chara* sp[COUNT];
 #define ANIM_COUNT 32
 TFT_eSprite** spr_ume1;
 TFT_eSprite** spr_ume2;
+TFT_eSprite** spr_sakura1;
 TFT_eSprite spr_bg = TFT_eSprite(&tft);
 TFT_eSprite spr_logo = TFT_eSprite(&tft);
 
@@ -27,6 +28,7 @@ enum Sequence
 {
   RedUme = 0,
   WhiteUme,
+  Sakura,
   Max
 };
 enum Sequence current_sequence = RedUme;
@@ -77,6 +79,9 @@ void setup(void) {
   // 白梅スプライトの初期化
   spr_ume2 = Chara::CreateFlowerSprites(&tft, ume2_palette, (uint16_t*)ume1_graphic, SP_WIDTH, SP_HEIGHT, ANIM_COUNT);
 
+  // 桜スプライトの初期化
+  spr_sakura1 = Chara::CreatePatternSprites(&tft, sakura_palette, (uint16_t*)sakura_graphic, SAKURA_WIDTH, SAKURA_HEIGHT, SAKURA_X_COUNT, SAKURA_Y_COUNT);
+
   // フレームバッファの初期化
   bg.setColorDepth(16);
   bg.createSprite(tft.width()/2, tft.height()/2);
@@ -116,8 +121,10 @@ void loop() {
     {
       if (current_sequence == Sequence::RedUme)
         sp[i]->SetPatterns(&spr_ume1[0], ANIM_COUNT);
-      else
+      else if (current_sequence == Sequence::WhiteUme)
         sp[i]->SetPatterns(&spr_ume2[0], ANIM_COUNT);
+      else
+        sp[i]->SetPatterns(&spr_sakura1[0], SAKURA_COUNT);
     }
   }
   
