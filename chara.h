@@ -22,12 +22,13 @@
 class Chara
 {
 public:
+  uint32_t id;
   float x;
   float y;
   bool active;
   bool out_of_screen;
 
-  Chara(TFT_eSprite** sprites, int32_t count, TFT_eSprite *draw_target);
+  Chara(TFT_eSprite** sprites, int32_t count, TFT_eSprite *draw_target, uint32_t index);
   void SetPatterns(TFT_eSprite** sprites, int32_t count);
   bool Move(bool respawn);
   void Draw();

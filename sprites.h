@@ -19,6 +19,7 @@ extern const uint8_t hippo_graphic[] PROGMEM;
 #define SAKURA_X_COUNT 4
 #define SAKURA_Y_COUNT 2
 #define SAKURA_COUNT (SAKURA_X_COUNT * SAKURA_Y_COUNT)
+#define SAKURA_ANIM_COUNT (3 * SAKURA_COUNT)
 extern const uint16_t sakura_palette[];
 extern const uint8_t sakura_graphic[] PROGMEM;
 

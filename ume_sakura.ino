@@ -98,11 +98,11 @@ void setup(void) {
   {
     if (i<10)
     {
-      sp[i] = new Chara(&spr_ume1[0], ANIM_COUNT, &bg);
+      sp[i] = new Chara(&spr_ume1[0], ANIM_COUNT, &bg, i);
     }
     else
     {
-      sp[i] = new Chara(&spr_sakura[0], SAKURA_COUNT * 3, &bg);
+      sp[i] = new Chara(&spr_sakura[0], SAKURA_ANIM_COUNT, &bg, i);
       sp[i]->active = false;
     }
   }
@@ -150,17 +150,17 @@ void loop() {
     {
       if (current_sequence == Sequence::RedUme)
       {
-        if (i>=10) sp[i]->active = false;
+        if (sp[i]->id>=10) sp[i]->active = false;
         else sp[i]->SetPatterns(&spr_ume1[0], ANIM_COUNT);
       }
       else if (current_sequence == Sequence::WhiteUme)
       {
-        if (i>=10) sp[i]->active = false;
+        if (sp[i]->id>=10) sp[i]->active = false;
         else sp[i]->SetPatterns(&spr_ume2[0], ANIM_COUNT);
       }
       else if (current_sequence == Sequence::Sakura)
       {
-        sp[i]->SetPatterns(&spr_sakura[0], SAKURA_COUNT * 3);
+        sp[i]->SetPatterns(&spr_sakura[0], SAKURA_ANIM_COUNT);
       }
       else if (current_sequence == Sequence::Hippo)
       {
@@ -168,16 +168,15 @@ void loop() {
       }
       else
       {
-        if (i>=10) sp[i]->active = false;
+        if (sp[i]->id>=10) sp[i]->active = false;
       }
     }
   }
-  Chara** sp_sort = sort_charas(&sp[0], COUNT);
+  sort_charas(&sp[0], COUNT);
   for (uint8_t i=0; i<COUNT; i++)
   {
-    sp_sort[i]->Draw();
+    sp[i]->Draw();
   }
-  free(sp_sort);
   
   // logo
   uint16_t c = tft.color565(random(2)*255, random(2)*255, random(2)*255);
@@ -202,16 +201,14 @@ void draw_bg(TFT_eSprite *target)
 
 int sort_desc(const void *cmp1, const void *cmp2)
 {
-  int32_t a = ((Chara*)cmp1)->y;
-  int32_t b = ((Chara*)cmp2)->y;
-  return a > b ? -1 : (a < b ? 1 : 0);
+  Chara* b = *(Chara**)cmp1;
+  Chara* a = *(Chara**)cmp2;
+  int32_t ay = a->x + a->y * SCREEN_WIDTH;
+  int32_t by = b->x + b->y * SCREEN_WIDTH;
+  return ay > by ? -1 : (ay < by ? 1 : 0);
 }
 
-Chara** sort_charas(Chara** src, uint8_t count)
+void sort_charas(Chara** src, uint8_t count)
 {
-  Chara** dst = new Chara*[count];
-  for (uint8_t i=0; i<count; i++)
-    dst[i] = src[i];
-  qsort(dst, count, sizeof(dst[0]), sort_desc);
-  return &dst[0];
+  qsort(src, count, sizeof(src[0]), sort_desc);
 }

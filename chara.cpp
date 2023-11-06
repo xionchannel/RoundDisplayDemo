@@ -82,12 +82,13 @@ TFT_eSprite** Chara::CreateRotPatternSprites(TFT_eSPI *tft, const uint16_t* pale
 }
 
 // 初期化
-Chara::Chara(TFT_eSprite** sprites, int32_t count, TFT_eSprite *draw_target)
+Chara::Chara(TFT_eSprite** sprites, int32_t count, TFT_eSprite *draw_target, uint32_t index)
 {
   SetPatterns(sprites, count);
 
   _draw_target = draw_target;
 
+  id = index;
   active = true;
   out_of_screen = false;
   x = random(SCREEN_WIDTH/2 - SP_WIDTH);
