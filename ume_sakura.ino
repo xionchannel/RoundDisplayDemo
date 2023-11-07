@@ -98,11 +98,11 @@ void setup(void) {
   {
     if (i<10)
     {
-      sp[i] = new Chara(&spr_ume1[0], ANIM_COUNT, &bg, i);
+      sp[i] = new Chara(&spr_ume1[0], ANIM_COUNT, &bg, i, true);
     }
     else
     {
-      sp[i] = new Chara(&spr_sakura[0], SAKURA_ANIM_COUNT, &bg, i);
+      sp[i] = new Chara(&spr_sakura[0], SAKURA_ANIM_COUNT, &bg, i, true);
       sp[i]->active = false;
     }
   }
@@ -151,20 +151,20 @@ void loop() {
       if (current_sequence == Sequence::RedUme)
       {
         if (sp[i]->id>=10) sp[i]->active = false;
-        else sp[i]->SetPatterns(&spr_ume1[0], ANIM_COUNT);
+        else sp[i]->SetPatterns(&spr_ume1[0], ANIM_COUNT, true);
       }
       else if (current_sequence == Sequence::WhiteUme)
       {
         if (sp[i]->id>=10) sp[i]->active = false;
-        else sp[i]->SetPatterns(&spr_ume2[0], ANIM_COUNT);
+        else sp[i]->SetPatterns(&spr_ume2[0], ANIM_COUNT, true);
       }
       else if (current_sequence == Sequence::Sakura)
       {
-        sp[i]->SetPatterns(&spr_sakura[0], SAKURA_ANIM_COUNT);
+        sp[i]->SetPatterns(&spr_sakura[0], SAKURA_ANIM_COUNT, true);
       }
       else if (current_sequence == Sequence::Hippo)
       {
-        sp[i]->SetPatterns(&spr_hippo[0], HIPPO_COUNT);
+        sp[i]->SetPatterns(&spr_hippo[0], HIPPO_COUNT, false);
       }
       else
       {

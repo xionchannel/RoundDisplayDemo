@@ -82,9 +82,9 @@ TFT_eSprite** Chara::CreateRotPatternSprites(TFT_eSPI *tft, const uint16_t* pale
 }
 
 // 初期化
-Chara::Chara(TFT_eSprite** sprites, int32_t count, TFT_eSprite *draw_target, uint32_t index)
+Chara::Chara(TFT_eSprite** sprites, int32_t count, TFT_eSprite *draw_target, uint32_t index, bool is_flower)
 {
-  SetPatterns(sprites, count);
+  SetPatterns(sprites, count, is_flower);
 
   _draw_target = draw_target;
 
@@ -103,17 +103,36 @@ Chara::Chara(TFT_eSprite** sprites, int32_t count, TFT_eSprite *draw_target, uin
 }
 
 // スプライトパターンを差し替える
-void Chara::SetPatterns(TFT_eSprite** sprites, int32_t count)
+void Chara::SetPatterns(TFT_eSprite** sprites, int32_t count, bool is_flower)
 {
   _pattern_count = count;
   _pattern_num = random(count);
   _pattern_anim_time = 0;
   _pattern_anim_time_max = random(3);
   _spr = sprites;
+  if (is_flower)
+  {
+    _move_func = &Chara::MoveFlower;
+  }
+  else
+  {
+    _move_func = &Chara::MoveHippo;
+    SpawnHippo();
+  }
 }
 
 // 移動、返り値は画面外にいる場合trueを返す
 bool Chara::Move(bool respawn)
+{
+  if (_move_func != nullptr)
+  {
+    return (this->*_move_func)(respawn);
+  }
+  return false;
+}
+
+// 花用の移動処理、返り値は画面外にいる場合trueを返す
+bool Chara::MoveFlower(bool respawn)
 {
   out_of_screen = false;
   if (!active) return true;
@@ -162,10 +181,48 @@ bool Chara::Move(bool respawn)
     }
   }
 
-  //if (!out_of_screen)
-  //{
-  //  (_spr[_pattern_num])->pushToSprite(_draw_target, x, y, TFT_TRANSPARENT);
-  //}
+  if (_pattern_anim_time <= 0)
+  {
+    _pattern_num = (_pattern_num + 1) % _pattern_count;
+  }
+  _pattern_anim_time--;
+  if (_pattern_anim_time < 0) _pattern_anim_time = _pattern_anim_time_max;
+
+  return out_of_screen;
+}
+
+// Hippo用の移動処理、返り値は画面外にいる場合trueを返す
+bool Chara::MoveHippo(bool respawn)
+{
+  out_of_screen = false;
+  if (!active) return true;
+
+  x += _accel_x;
+  y += _accel_y;
+  if (x < SCREEN_XMIN)
+  {
+    x = SCREEN_XMAX;
+    SpawnHippo();
+    out_of_screen = true;
+  }
+  else if (x > SCREEN_XMAX)
+  {
+    x = SCREEN_XMIN;
+    SpawnHippo();
+    out_of_screen = true;
+  }
+  if (y < SCREEN_YMIN)
+  {
+    y = SCREEN_YMIN;
+    SpawnHippo();
+    out_of_screen = true;
+  }
+  else if (y > SCREEN_YMAX)
+  {
+    out_of_screen = true;
+    SpawnHippo();
+    y = SCREEN_YMAX;
+  }
 
   if (_pattern_anim_time <= 0)
   {
@@ -173,9 +230,20 @@ bool Chara::Move(bool respawn)
   }
   _pattern_anim_time--;
   if (_pattern_anim_time < 0) _pattern_anim_time = _pattern_anim_time_max;
-  //(*_spr[_pattern_num]).setPivot(SP_WIDTH/2, SP_HEIGHT/2);
-  //(*_spr[_pattern_num]).pushRotated(_draw_target, random(360), TFT_TRANSPARENT);
+
   return out_of_screen;
+}
+
+void Chara::SpawnHippo()
+{
+  float flagx = random(2)>0 ? -1.0f : 1.0f;
+  float flagy = random(2)>0 ? -1.0f : 1.0f;
+  if (x <= SCREEN_XMIN) flagx=1.0f;
+  else if (x >= SCREEN_XMAX) flagx=-1.0f;
+  if (y <= SCREEN_YMIN) flagy=1.0f;
+  else if (y >= SCREEN_YMAX) flagy=-1.0f;
+  _accel_x = (random(MOVESPEED_HIPPO) + 1.0) * flagx;
+  _accel_y = (random(MOVESPEED_HIPPO) + 1.0) * flagy;
 }
 
 void Chara::Draw()

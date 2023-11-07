@@ -18,6 +18,7 @@
 #define SCREEN_YMAX (SCREEN_HEIGHT/2)
 
 #define MOVESPEED 3
+#define MOVESPEED_HIPPO 2
 
 class Chara
 {
@@ -28,8 +29,8 @@ public:
   bool active;
   bool out_of_screen;
 
-  Chara(TFT_eSprite** sprites, int32_t count, TFT_eSprite *draw_target, uint32_t index);
-  void SetPatterns(TFT_eSprite** sprites, int32_t count);
+  Chara(TFT_eSprite** sprites, int32_t count, TFT_eSprite *draw_target, uint32_t index, bool is_flower);
+  void SetPatterns(TFT_eSprite** sprites, int32_t count, bool is_flower);
   bool Move(bool respawn);
   void Draw();
 
@@ -49,6 +50,11 @@ private:
   float _accel_y;
   float _time_count1;
   float _time_count2;
+  bool (Chara::*_move_func)(bool);
+
+  bool MoveFlower(bool respawn);
+  bool MoveHippo(bool respawn);
+  void SpawnHippo();
 };
 
 #endif
