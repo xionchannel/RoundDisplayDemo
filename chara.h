@@ -17,8 +17,9 @@
 #define SCREEN_XMAX (SCREEN_WIDTH/2)
 #define SCREEN_YMAX (SCREEN_HEIGHT/2)
 
-#define MOVESPEED 3
-#define MOVESPEED_HIPPO 2
+#define MOVESPEED 3.0
+#define MOVESPEED_HIPPO 2.0
+#define BOUNCE_DELAY 10
 
 class Chara
 {
@@ -28,11 +29,16 @@ public:
   float y;
   bool active;
   bool out_of_screen;
+  bool is_flower;
+  int32_t width;
+  int32_t height;
+  int32_t now_bounced;
 
-  Chara(TFT_eSprite** sprites, int32_t count, TFT_eSprite *draw_target, uint32_t index, bool is_flower);
-  void SetPatterns(TFT_eSprite** sprites, int32_t count, bool is_flower);
+  Chara(TFT_eSprite** sprites, int32_t count, TFT_eSprite *draw_target, uint32_t index, bool is_flower_);
+  void SetPatterns(TFT_eSprite** sprites, int32_t count, bool is_flower_);
   bool Move(bool respawn);
   void Draw();
+  void Bounce();
 
   static TFT_eSprite** CreateFlowerSprites(TFT_eSPI *tft, const uint16_t* palette, const uint16_t* graphic, const uint16_t transp, const uint16_t width, const uint16_t height, const uint16_t count);
   static TFT_eSprite** CreatePatternSprites(TFT_eSPI *tft, const uint16_t* palette, const uint16_t* graphic, const uint16_t transp, const uint16_t width, const uint16_t height, const uint16_t xcount, const uint16_t ycount);
@@ -50,10 +56,10 @@ private:
   float _accel_y;
   float _time_count1;
   float _time_count2;
-  bool (Chara::*_move_func)(bool);
 
   bool MoveFlower(bool respawn);
   bool MoveHippo(bool respawn);
+  void SpawnFlower();
   void SpawnHippo();
 };
 

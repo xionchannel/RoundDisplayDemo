@@ -133,20 +133,52 @@ void loop() {
     current_sequence = static_cast<Sequence>((static_cast<uint8_t>(current_sequence) + 1) % static_cast<uint8_t>(Sequence::Max));
   }
 
-  // 描画処理
+  // 描画処理ここから
   tft.startWrite();
   draw_bg(&bg);
+
+  // スプライトの処理
   for (uint8_t i=0; i<COUNT; i++)
   {
+    // Sakura, Hippoのときだけスプライトの数を最大にする
     if (!sp[i]->active) {
       if (current_sequence == Sequence::Sakura || current_sequence == Sequence::Hippo)
       {
         sp[i]->active = true;
+        if (current_sequence != Sequence::Hippo)
+        {
+          sp[i]->SetPatterns(&spr_sakura[0], SAKURA_ANIM_COUNT, true);
+        }
+        else
+        {
+          sp[i]->SetPatterns(&spr_hippo[0], HIPPO_COUNT, false);
+        }
+        continue;
       }
     }
 
+    // スプライト移動処理
     bool out_of_screen = sp[i]->Move(respawn);
-    if (out_of_screen)
+    if (!out_of_screen)
+    {
+      if (current_sequence == Sequence::Hippo)
+      {
+        // Hippoのときだけ相互衝突で向きを変える
+        for (uint8_t j=0; j<COUNT; j++)
+        {
+          if (i==j) continue;
+          if (bounce_check(sp[i]->x, sp[i]->y, sp[j]->x, sp[j]->y, 20))
+          {
+            sp[i]->Bounce();
+            sp[j]->now_bounced = BOUNCE_DELAY;
+          }
+        }
+      }
+      continue;
+    }
+
+    // スプライトが画面外になったときの処理
+    //if (out_of_screen)
     {
       if (current_sequence == Sequence::RedUme)
       {
@@ -172,18 +204,21 @@ void loop() {
       }
     }
   }
+
+  // スプライトの描画処理
   sort_charas(&sp[0], COUNT);
   for (uint8_t i=0; i<COUNT; i++)
   {
     sp[i]->Draw();
   }
   
-  // logo
+  // ロゴ表示処理
   uint16_t c = tft.color565(random(2)*255, random(2)*255, random(2)*255);
   if (c == 0) c = TFT_RED;
   c = tft.alphaBlend(128, c, TFT_WHITE);
   //Utility::pushSprite4ToSpriteBlended(&spr_logo, &bg, ((SCREEN_WIDTH/2)-LOGO_WIDTH)/2+1, ((SCREEN_HEIGHT/2)-LOGO_HEIGHT)/2, c, 0.5f);
   
+  // フレームバッファの拡大転送
   Utility::pushSpriteScaled(&bg, &tft, 0, 0, bg.width(), bg.height());
   tft.endWrite();
 }
@@ -197,6 +232,12 @@ void draw_bg(TFT_eSprite *target)
       spr_bg.pushToSprite(target, j*SP_WIDTH, i*SP_HEIGHT);
     }
   }
+}
+
+bool bounce_check(int32_t x1, int32_t y1, int32_t x2, int32_t y2, int32_t size)
+{
+  if (abs(x1-x2) < size && abs(y1-y2) < size) return true;
+  return false;
 }
 
 int sort_desc(const void *cmp1, const void *cmp2)

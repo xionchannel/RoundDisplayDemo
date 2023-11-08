@@ -82,9 +82,9 @@ TFT_eSprite** Chara::CreateRotPatternSprites(TFT_eSPI *tft, const uint16_t* pale
 }
 
 // 初期化
-Chara::Chara(TFT_eSprite** sprites, int32_t count, TFT_eSprite *draw_target, uint32_t index, bool is_flower)
+Chara::Chara(TFT_eSprite** sprites, int32_t count, TFT_eSprite *draw_target, uint32_t index, bool is_flower_)
 {
-  SetPatterns(sprites, count, is_flower);
+  SetPatterns(sprites, count, is_flower_);
 
   _draw_target = draw_target;
 
@@ -103,20 +103,28 @@ Chara::Chara(TFT_eSprite** sprites, int32_t count, TFT_eSprite *draw_target, uin
 }
 
 // スプライトパターンを差し替える
-void Chara::SetPatterns(TFT_eSprite** sprites, int32_t count, bool is_flower)
+void Chara::SetPatterns(TFT_eSprite** sprites, int32_t count, bool is_flower_)
 {
-  _pattern_count = count;
-  _pattern_num = random(count);
-  _pattern_anim_time = 0;
-  _pattern_anim_time_max = random(3);
   _spr = sprites;
+  width = sprites[0]->width();
+  height = sprites[0]->height();
+  now_bounced = 0;
+
+  is_flower = is_flower_;
   if (is_flower)
   {
-    _move_func = &Chara::MoveFlower;
+    _pattern_count = count;
+    _pattern_num = random(count);
+    _pattern_anim_time = 0;
+    _pattern_anim_time_max = random(3);
+    SpawnFlower();
   }
   else
   {
-    _move_func = &Chara::MoveHippo;
+    _pattern_count = 2;
+    _pattern_num = random(2);
+    _pattern_anim_time = 0;
+    _pattern_anim_time_max = 2;
     SpawnHippo();
   }
 }
@@ -124,11 +132,16 @@ void Chara::SetPatterns(TFT_eSprite** sprites, int32_t count, bool is_flower)
 // 移動、返り値は画面外にいる場合trueを返す
 bool Chara::Move(bool respawn)
 {
-  if (_move_func != nullptr)
+  if (now_bounced > 0) now_bounced--;
+
+  if (is_flower)
   {
-    return (this->*_move_func)(respawn);
+    return MoveFlower(respawn);
   }
-  return false;
+  else
+  {
+    return MoveHippo(respawn);
+  }
 }
 
 // 花用の移動処理、返り値は画面外にいる場合trueを返す
@@ -167,13 +180,7 @@ bool Chara::MoveFlower(bool respawn)
     out_of_screen = true;
     if (respawn)
     {
-      y = SCREEN_YMIN;
-      x = random(SCREEN_WIDTH/2 - SP_WIDTH);
-      _speed = random(MOVESPEED) + 1;
-      //int32_t flag = (random(2) > 0 ? -1 : 1);
-      //_accel_x = _speed * flag;
-      _accel_x = random(MOVESPEED * 2.0) - MOVESPEED;
-      _accel_y = random(MOVESPEED * 2.0) + 1.0;
+      SpawnFlower();
     }
     else
     {
@@ -234,21 +241,75 @@ bool Chara::MoveHippo(bool respawn)
   return out_of_screen;
 }
 
+void Chara::SpawnFlower()
+{
+  y = SCREEN_YMIN;
+  x = random(SCREEN_WIDTH/2 - SP_WIDTH);
+  _speed = random(MOVESPEED) + 1;
+  //int32_t flag = (random(2) > 0 ? -1 : 1);
+  //_accel_x = _speed * flag;
+  _accel_x = random(MOVESPEED * 2.0) - MOVESPEED;
+  _accel_y = random(MOVESPEED * 2.0) + 1.0;
+}
+
 void Chara::SpawnHippo()
 {
   float flagx = random(2)>0 ? -1.0f : 1.0f;
   float flagy = random(2)>0 ? -1.0f : 1.0f;
-  if (x <= SCREEN_XMIN) flagx=1.0f;
-  else if (x >= SCREEN_XMAX) flagx=-1.0f;
-  if (y <= SCREEN_YMIN) flagy=1.0f;
-  else if (y >= SCREEN_YMAX) flagy=-1.0f;
+  if (x <= SCREEN_XMIN)
+  {
+    flagx=1.0f;
+    y = random(SCREEN_YMAX - SCREEN_YMIN) + SCREEN_YMIN;
+  }
+  else if (x >= SCREEN_XMAX)
+  {
+    flagx=-1.0f;
+    y = random(SCREEN_YMAX - SCREEN_YMIN) + SCREEN_YMIN;
+  }
+  if (y <= SCREEN_YMIN)
+  {
+    flagy=1.0f;
+    x = random(SCREEN_XMAX - SCREEN_XMIN) + SCREEN_XMIN;
+  }
+  else if (y >= SCREEN_YMAX)
+  {
+    flagy=-1.0f;
+    x = random(SCREEN_XMAX - SCREEN_XMIN) + SCREEN_XMIN;
+  }
   _accel_x = (random(MOVESPEED_HIPPO) + 1.0) * flagx;
   _accel_y = (random(MOVESPEED_HIPPO) + 1.0) * flagy;
+}
+
+void Chara::Bounce()
+{
+  if (now_bounced > 0)
+  {
+    return;
+  }
+  if (random(2) == 0) _accel_x *= -1.0;
+  else _accel_y *= -1.0;  
+  now_bounced = BOUNCE_DELAY;
 }
 
 void Chara::Draw()
 {
   if (!active) return;
   if (out_of_screen) return;
-  (_spr[_pattern_num])->pushToSprite(_draw_target, x, y, TFT_TRANSPARENT);
+
+  int32_t pat = _pattern_num;
+  if (!is_flower)
+  {
+    // Hippoの場合は移動方向に応じてパターンを変化させる
+    if (abs(_accel_x) > abs(_accel_y))
+    {
+      if (_accel_x > 0) pat = 3 + _pattern_num * 4;
+      else pat = 2 + _pattern_num * 4;
+    }
+    else
+    {
+      if (_accel_y < 0) pat = 1 + _pattern_num * 4;
+      else pat = _pattern_num * 4;
+    }
+  }
+  (_spr[pat])->pushToSprite(_draw_target, x, y, TFT_TRANSPARENT);
 }
