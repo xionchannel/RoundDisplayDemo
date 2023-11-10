@@ -1,13 +1,10 @@
 // chara.h
 // chara control class
 #include <TFT_eSPI.h>
-#include "Utility.h"
+#include "utility.h"
 
 #ifndef _CHARA_
 #define _CHARA_
-
-#define SCREEN_WIDTH 244  // 画面端のゴミ回避のため少し大きめにする
-#define SCREEN_HEIGHT 244 // 画面端のゴミ回避のため少し大きめにする
 
 #define SP_WIDTH  32
 #define SP_HEIGHT 32
@@ -19,7 +16,7 @@
 
 #define MOVESPEED 3.0
 #define MOVESPEED_HIPPO 2.0
-#define BOUNCE_DELAY 10
+#define HIPPO_ANIM_SPEED 3
 
 class Chara
 {
@@ -32,13 +29,11 @@ public:
   bool is_flower;
   int32_t width;
   int32_t height;
-  int32_t now_bounced;
 
   Chara(TFT_eSprite** sprites, int32_t count, TFT_eSprite *draw_target, uint32_t index, bool is_flower_);
   void SetPatterns(TFT_eSprite** sprites, int32_t count, bool is_flower_);
   bool Move(bool respawn);
   void Draw();
-  void Bounce();
 
   static TFT_eSprite** CreateFlowerSprites(TFT_eSPI *tft, const uint16_t* palette, const uint16_t* graphic, const uint16_t transp, const uint16_t width, const uint16_t height, const uint16_t count);
   static TFT_eSprite** CreatePatternSprites(TFT_eSPI *tft, const uint16_t* palette, const uint16_t* graphic, const uint16_t transp, const uint16_t width, const uint16_t height, const uint16_t xcount, const uint16_t ycount);

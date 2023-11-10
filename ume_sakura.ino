@@ -3,6 +3,7 @@
 #include "sprites.h"
 #include "chara.h"
 #include "utility.h"
+#include "logoControl.h"
 
 TFT_eSPI tft = TFT_eSPI(SCREEN_WIDTH, SCREEN_HEIGHT);         // Create object "tft"
 
@@ -12,6 +13,7 @@ uint16_t bg_color = TFT_BLACK;
 
 #define COUNT 30
 Chara* sp[COUNT];
+Logo* logo_control;
 
 #define ANIM_COUNT 32
 TFT_eSprite** spr_ume1;
@@ -46,18 +48,11 @@ void setup(void) {
 
   // ロゴの初期化
   {
-    TFT_eSprite spt = TFT_eSprite(&tft);
-    spt.setColorDepth(4);
-    spt.createSprite(LOGO_WIDTH, LOGO_HEIGHT);
-    spt.createPalette(logo_palette);
-    spt.pushImage(0, 0, LOGO_WIDTH, LOGO_HEIGHT, (uint16_t*)logo_graphic);
-
     spr_logo.setColorDepth(4);
     spr_logo.createSprite(LOGO_WIDTH, LOGO_HEIGHT);
     spr_logo.createPalette(logo_palette);
     spr_logo.pushImage(0, 0, LOGO_WIDTH, LOGO_HEIGHT, (uint16_t*)logo_graphic);
-
-    spt.deleteSprite();
+    logo_control = new Logo(&spr_logo, &bg);
   }
 
   // 背景の初期化
@@ -161,19 +156,6 @@ void loop() {
     bool out_of_screen = sp[i]->Move(respawn);
     if (!out_of_screen)
     {
-      if (current_sequence == Sequence::Hippo)
-      {
-        // Hippoのときだけ相互衝突で向きを変える
-        for (uint8_t j=0; j<COUNT; j++)
-        {
-          if (i==j) continue;
-          if (bounce_check(sp[i]->x, sp[i]->y, sp[j]->x, sp[j]->y, 20))
-          {
-            sp[i]->Bounce();
-            sp[j]->now_bounced = BOUNCE_DELAY;
-          }
-        }
-      }
       continue;
     }
 
@@ -213,10 +195,10 @@ void loop() {
   }
   
   // ロゴ表示処理
-  uint16_t c = tft.color565(random(2)*255, random(2)*255, random(2)*255);
-  if (c == 0) c = TFT_RED;
-  c = tft.alphaBlend(128, c, TFT_WHITE);
-  //Utility::pushSprite4ToSpriteBlended(&spr_logo, &bg, ((SCREEN_WIDTH/2)-LOGO_WIDTH)/2+1, ((SCREEN_HEIGHT/2)-LOGO_HEIGHT)/2, c, 0.5f);
+  if (current_sequence == Sequence::Hippo)
+  {
+    logo_control->MoveAndDraw((float)current_sequence_time / (float)sequence_time_max);
+  }
   
   // フレームバッファの拡大転送
   Utility::pushSpriteScaled(&bg, &tft, 0, 0, bg.width(), bg.height());
@@ -232,12 +214,6 @@ void draw_bg(TFT_eSprite *target)
       spr_bg.pushToSprite(target, j*SP_WIDTH, i*SP_HEIGHT);
     }
   }
-}
-
-bool bounce_check(int32_t x1, int32_t y1, int32_t x2, int32_t y2, int32_t size)
-{
-  if (abs(x1-x2) < size && abs(y1-y2) < size) return true;
-  return false;
 }
 
 int sort_desc(const void *cmp1, const void *cmp2)

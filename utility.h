@@ -6,6 +6,9 @@
 #ifndef _UTILITY_
 #define _UTILITY_
 
+#define SCREEN_WIDTH 244  // 画面端のゴミ回避のため少し大きめにする
+#define SCREEN_HEIGHT 244 // 画面端のゴミ回避のため少し大きめにする
+
 class Utility
 {
 public:

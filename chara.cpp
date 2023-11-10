@@ -108,7 +108,6 @@ void Chara::SetPatterns(TFT_eSprite** sprites, int32_t count, bool is_flower_)
   _spr = sprites;
   width = sprites[0]->width();
   height = sprites[0]->height();
-  now_bounced = 0;
 
   is_flower = is_flower_;
   if (is_flower)
@@ -124,7 +123,7 @@ void Chara::SetPatterns(TFT_eSprite** sprites, int32_t count, bool is_flower_)
     _pattern_count = 2;
     _pattern_num = random(2);
     _pattern_anim_time = 0;
-    _pattern_anim_time_max = 2;
+    _pattern_anim_time_max = HIPPO_ANIM_SPEED;
     SpawnHippo();
   }
 }
@@ -132,8 +131,6 @@ void Chara::SetPatterns(TFT_eSprite** sprites, int32_t count, bool is_flower_)
 // 移動、返り値は画面外にいる場合trueを返す
 bool Chara::Move(bool respawn)
 {
-  if (now_bounced > 0) now_bounced--;
-
   if (is_flower)
   {
     return MoveFlower(respawn);
@@ -203,6 +200,14 @@ bool Chara::MoveHippo(bool respawn)
 {
   out_of_screen = false;
   if (!active) return true;
+
+  _time_count1--;
+  if (_time_count1 < 0)
+  {
+    if (random(2) == 0) _accel_x *= -1;
+    else _accel_y *= -1;
+    _time_count1 = _time_count2;
+  }
 
   x += _accel_x;
   y += _accel_y;
@@ -276,19 +281,9 @@ void Chara::SpawnHippo()
     flagy=-1.0f;
     x = random(SCREEN_XMAX - SCREEN_XMIN) + SCREEN_XMIN;
   }
-  _accel_x = (random(MOVESPEED_HIPPO) + 1.0) * flagx;
-  _accel_y = (random(MOVESPEED_HIPPO) + 1.0) * flagy;
-}
-
-void Chara::Bounce()
-{
-  if (now_bounced > 0)
-  {
-    return;
-  }
-  if (random(2) == 0) _accel_x *= -1.0;
-  else _accel_y *= -1.0;  
-  now_bounced = BOUNCE_DELAY;
+  _accel_x = (random(MOVESPEED_HIPPO * 10.0)/10.0 + 1.0) * flagx;
+  _accel_y = (random(MOVESPEED_HIPPO * 10.0)/10.0 + 1.0) * flagy;
+  _time_count1 = _time_count2 = random(10) + 50;
 }
 
 void Chara::Draw()
