@@ -98,8 +98,24 @@ CopyBuffer** Utility::calcCircleBuffers(const int32_t center_, const int32_t ran
   CopyBuffer** b = new CopyBuffer*[range_];
   for (uint32_t i=0; i<range_; i++)
   {
-    b[0] = new CopyBuffer();
-    // 円の交差をやって x, width を記録する
+    b[i] = new CopyBuffer();
+    b[i]->x = -1;
+    for (uint32_t j=0; j<range_; j++)
+    {
+      // 円の交差をやって x, width を記録する
+      int32_t xx = j-center_;
+      int32_t yy = i-center_;
+      int32_t dist = xx*xx + yy*yy;
+      if (dist <= range_*range_)
+      {
+        // 円の中
+        if (b[i]->x < 0) b[i]->x = j;
+        if (b[i]->x >= 0)
+        {
+          b[i]->width = j - b[i]->x + 1;
+        }
+      }
+    }
   }
   return &b[0];
 }
