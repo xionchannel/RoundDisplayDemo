@@ -69,7 +69,8 @@ void Utility::pushSpriteScaled(TFT_eSprite* spr_, TFT_eSPI* tft_, const int32_t 
     if (h<=0) return;
   }*/
 
-  uint16_t line_buffer[w * 2];
+  uint16_t size = w*2;
+  uint16_t line_buffer[size];
   for (uint32_t i=0; i<h; i++)
   {
     for (uint32_t j=0; j<w; j++)
@@ -80,13 +81,52 @@ void Utility::pushSpriteScaled(TFT_eSprite* spr_, TFT_eSPI* tft_, const int32_t 
       line_buffer[j*2] = line_buffer[j*2+1] = rp;
     }
     #if true
-    tft_->pushImage(x*2, (y+i)*2, w*2, 1, line_buffer);
-    tft_->pushImage(x*2, (y+i)*2+1, w*2, 1, line_buffer);
+    tft_->pushImage(x*2, (y+i)*2, size, 1, line_buffer);
+    tft_->pushImage(x*2, (y+i)*2+1, size, 1, line_buffer);
     #else
-    tft_->setWindow(x*2, (y+i)*2, x*2+w*2-1, (y+i)*2);
-    tft_->pushPixels(line_buffer, w*2);
-    tft_->setWindow(x*2, (y+i)*2+1, x*2+w*2-1, (y+i)*2+1);
-    tft_->pushPixels(line_buffer, w*2);
+    tft_->setWindow(x*2, (y+i)*2, x*2+size-1, (y+i)*2);
+    tft_->pushPixels(line_buffer, size);
+    tft_->setWindow(x*2, (y+i)*2+1, x*2+size-1, (y+i)*2+1);
+    tft_->pushPixels(line_buffer, size);
+    #endif
+  }
+}
+
+// 円形コピー用のラインバッファサイズを計算して確保して返す
+CopyBuffer** Utility::calcCircleBuffers(const int32_t center_, const int32_t range_)
+{
+  CopyBuffer** b = new CopyBuffer*[range_];
+  for (uint32_t i=0; i<range_; i++)
+  {
+    b[0] = new CopyBuffer();
+    // 円の交差をやって x, width を記録する
+  }
+  return &b[0];
+}
+
+// バッファ配列をもらってそれに従って２倍にコピーする
+void Utility::pushSpriteScaledBuffers(TFT_eSprite* spr_, TFT_eSPI* tft_, CopyBuffer** buff_, const int32_t count_)
+{
+  for (uint32_t i=0; i<count_; i++)
+  {
+    CopyBuffer* b = buff_[i];
+    uint16_t size = b->width * 2;
+    if (size <= 0) continue;
+    uint16_t line_buffer[size];
+    for (uint32_t j=0; j<b->width; j++)
+    {
+      uint16_t rp = spr_->readPixel(j+b->x, i);
+      rp = (rp>>8 | rp<<8);
+      line_buffer[j*2] = line_buffer[j*2+1] = rp;
+    }
+    #if true
+    tft_->pushImage(b->x*2, i*2, size, 1, line_buffer);
+    tft_->pushImage(b->x*2, i*2+1, size, 1, line_buffer);
+    #else
+    tft_->setWindow(b->x*2, i*2, b->x*2+size-1, i*2);
+    tft_->pushPixels(line_buffer, size);
+    tft_->setWindow(b->x*2, i*2+1, b->x*2+size-1, i*2+1);
+    tft_->pushPixels(line_buffer, size);
     #endif
   }
 }

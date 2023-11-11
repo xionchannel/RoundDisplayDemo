@@ -16,6 +16,13 @@
 // スプライトの表示範囲計算用の距離2乗数値
 #define SCREEN_DISTANCE (SCREEN_CENTER_X*SCREEN_CENTER_X)
 
+class CopyBuffer
+{
+public:
+  int32_t x;
+  int32_t width;
+};
+
 class Utility
 {
 public:
@@ -23,6 +30,8 @@ public:
   static uint16_t scaleColor(const uint16_t color, const float scale);
   static uint16_t addColor(const uint16_t color_a, const uint16_t color_b);
   static void pushSpriteScaled(TFT_eSprite* spr_, TFT_eSPI* tft_, const int32_t x, const int32_t y, const int32_t w, const int32_t h);
+  static CopyBuffer** calcCircleBuffers(const int32_t center_, const int32_t range_);
+  static void pushSpriteScaledBuffers(TFT_eSprite* spr_, TFT_eSPI* tft_, CopyBuffer** buff_, const int32_t count_);
   static void pushToSprite(TFT_eSprite* src_, TFT_eSprite* dst_, const int32_t x, const int32_t y, const uint8_t transp_);
   static void pushSprite4ToSprite(TFT_eSprite* src_, TFT_eSprite* dst_, const int32_t x, const int32_t y, const uint8_t transp_);
   static void pushSprite4ToSpriteClip(TFT_eSprite* src_, TFT_eSprite* dst_, const int32_t xst, const int32_t yst, const int32_t xed, const int32_t yed, const int32_t x, const int32_t y, const uint8_t transp_);
@@ -30,7 +39,6 @@ public:
   static void pushSprite4ToSpriteBlended(TFT_eSprite* src_, TFT_eSprite* dst_, const int32_t x, const int32_t y, const uint16_t color_, const float alpha_);
   static void pushSprite4ToSprite(TFT_eSprite* src_, TFT_eSprite* dst_, const int32_t x, const int32_t y);
   static void createPaletteMultiply(TFT_eSprite* target_, const float r_, const float g_, const float b_);
-
 };
 
 #endif
