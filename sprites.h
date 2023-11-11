@@ -8,6 +8,8 @@ extern const uint8_t ume1_graphic[] PROGMEM;
 extern const uint16_t ume2_palette[];
 //extern const uint8_t ume2_graphic[] PROGMEM;
 
+#define HIPPO_WIDTH 20
+#define HIPPO_HEIGHT 25
 #define HIPPO_X_COUNT 4
 #define HIPPO_Y_COUNT 2
 #define HIPPO_COUNT (HIPPO_X_COUNT * HIPPO_Y_COUNT)

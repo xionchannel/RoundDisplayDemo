@@ -290,6 +290,7 @@ void Chara::Draw()
 {
   if (!active) return;
   if (out_of_screen) return;
+  if (IsOutOfScreen()) return;
 
   int32_t pat = _pattern_num;
   if (!is_flower)
@@ -307,4 +308,12 @@ void Chara::Draw()
     }
   }
   (_spr[pat])->pushToSprite(_draw_target, x, y, TFT_TRANSPARENT);
+}
+
+bool Chara::IsOutOfScreen()
+{
+  int32_t x_ = SCREEN_CENTER_X - x - width;
+  int32_t y_ = SCREEN_CENTER_Y - y - height;
+  int32_t dist = (x_ * x_) + (y_ * y_);
+  return (dist > SCREEN_DISTANCE + height*height*4);
 }

@@ -56,6 +56,7 @@ private:
   bool MoveHippo(bool respawn);
   void SpawnFlower();
   void SpawnHippo();
+  bool IsOutOfScreen();
 };
 
 #endif

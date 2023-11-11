@@ -8,6 +8,13 @@
 
 #define SCREEN_WIDTH 244  // 画面端のゴミ回避のため少し大きめにする
 #define SCREEN_HEIGHT 244 // 画面端のゴミ回避のため少し大きめにする
+#define SCREEN_WIDTH_HALF (SCREEN_WIDTH/2)
+#define SCREEN_HEIGHT_HALF (SCREEN_HEIGHT/2)
+#define SCREEN_CENTER_X (SCREEN_WIDTH_HALF/2)
+#define SCREEN_CENTER_Y (SCREEN_HEIGHT_HALF/2)
+
+// スプライトの表示範囲計算用の距離2乗数値
+#define SCREEN_DISTANCE (SCREEN_CENTER_X*SCREEN_CENTER_X)
 
 class Utility
 {

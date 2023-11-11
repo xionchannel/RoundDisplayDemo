@@ -81,7 +81,7 @@ void setup(void) {
   spr_sakura = Chara::CreateRotPatternSprites(&tft, sakura_palette, (uint16_t*)sakura_graphic, 0, SAKURA_WIDTH, SAKURA_HEIGHT, SAKURA_X_COUNT, SAKURA_Y_COUNT, 3);
 
   // ヒッポースプライトの初期化
-  spr_hippo = Chara::CreatePatternSprites(&tft, hippo_palette, (uint16_t*)hippo_graphic, 4, SP_WIDTH, SP_HEIGHT, HIPPO_X_COUNT, HIPPO_Y_COUNT);
+  spr_hippo = Chara::CreatePatternSprites(&tft, hippo_palette, (uint16_t*)hippo_graphic, 4, HIPPO_WIDTH, HIPPO_HEIGHT, HIPPO_X_COUNT, HIPPO_Y_COUNT);
 
   // フレームバッファの初期化
   bg.setColorDepth(16);
