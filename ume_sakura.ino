@@ -11,23 +11,33 @@ TFT_eSprite bg = TFT_eSprite(&tft); // bg buffer
 
 uint16_t bg_color = TFT_BLACK;
 
-#define COUNT 30
-Chara* sp[COUNT];
-Logo* logo_control;
+#define COUNT 30  // スプライトの最大数
+#define UME_COUNT 10  // 梅のときのスプライト最大数
+Chara* sp[COUNT]; // スプライトコントロール用クラス
+Logo* logo_control; // ロゴコントロール用クラス
+Logo* space_control;  // スペース番号コントロール用クラス
 
-CopyBuffer** buf;
-int32_t buf_count;
+CopyBuffer** buf; // 円形コピー用の範囲バッファ
+int32_t buf_count;  // 上記のバッファの配列数
 
 #define ANIM_COUNT 32
-TFT_eSprite** spr_ume1;
-TFT_eSprite** spr_ume2;
-TFT_eSprite** spr_sakura;
-TFT_eSprite** spr_hippo;
-TFT_eSprite spr_bg = TFT_eSprite(&tft);
-TFT_eSprite spr_logo = TFT_eSprite(&tft);
+TFT_eSprite** spr_ume1; // 紅梅
+TFT_eSprite** spr_ume2; // 白梅
+TFT_eSprite** spr_sakura; // 桜の花びら
+TFT_eSprite** spr_hippo;  // Hippo
+TFT_eSprite spr_bg = TFT_eSprite(&tft); // 背景
+TFT_eSprite spr_logo = TFT_eSprite(&tft); // サークルロゴ
+TFT_eSprite spr_space = TFT_eSprite(&tft);  // スペース番号
 
 int32_t sequence_time_max = 200;
 int32_t current_sequence_time = 50;
+
+// フレームレート管理
+const unsigned long frame_ms = 50;// 1フレームあたりの単位時間(ms)
+unsigned long merc; // フレーム管理時計用
+unsigned long curr; // 現在時刻取をミリ秒で取得する用
+unsigned long curr_micro; // 現在時刻をマイクロ秒で取得する用
+
 
 enum Sequence
 {
@@ -56,6 +66,19 @@ void setup(void) {
     spr_logo.createPalette(logo_palette);
     spr_logo.pushImage(0, 0, LOGO_WIDTH, LOGO_HEIGHT, (uint16_t*)logo_graphic);
     logo_control = new Logo(&spr_logo, &bg);
+  }
+
+  // スペース番号の初期化
+  {
+    spr_space.setColorDepth(4);
+    spr_space.createSprite(SPACE_WIDTH, SPACE_HEIGHT);
+    spr_space.createPalette(space_palette);
+    spr_space.pushImage(0, 0, SPACE_WIDTH, SPACE_HEIGHT, (uint16_t*)space_graphic);
+    space_control = new Logo(&spr_space, &bg);
+    space_control->is_circle = false;
+    space_control->is_rainbow = false;
+
+    space_control->StartFade(true);
   }
 
   // 背景の初期化
@@ -94,7 +117,7 @@ void setup(void) {
 
   for (uint8_t i=0; i<COUNT; i++)
   {
-    if (i<10)
+    if (i<UME_COUNT)
     {
       sp[i] = new Chara(&spr_ume1[0], ANIM_COUNT, &bg, i, true);
     }
@@ -108,7 +131,9 @@ void setup(void) {
   buf = Utility::calcCircleBuffers(SCREEN_CENTER_X, SCREEN_CENTER_X);
   buf_count = SCREEN_CENTER_X * 2;
 
-  delay(500);
+  merc = millis();  // フレーム管理時計用の初期時刻
+
+  //delay(500);
 
   //tft.startWrite();
   //pushSpriteScaled(&bg, &tft, 0, 0, tft.width()/2, tft.height()/2);
@@ -130,8 +155,21 @@ void loop() {
   current_sequence_time--;
   if (current_sequence_time <= 0 || force_to_next)
   {
+    // シーケンスの変化の瞬間の処理
     current_sequence_time = sequence_time_max;
     current_sequence = static_cast<Sequence>((static_cast<uint8_t>(current_sequence) + 1) % static_cast<uint8_t>(Sequence::Max));
+
+    switch(current_sequence)
+    {
+      case Sequence::Hippo:
+        space_control->StartFade(false);
+        logo_control->StartFade(true);
+        break;
+      case Sequence::RedUme:
+        logo_control->StartFade(false);
+        space_control->StartFade(true);
+        break;
+    }
   }
 
   // 描画処理ここから
@@ -170,12 +208,12 @@ void loop() {
     {
       if (current_sequence == Sequence::RedUme)
       {
-        if (sp[i]->id>=10) sp[i]->active = false;
+        if (sp[i]->id>=UME_COUNT) sp[i]->active = false;
         else sp[i]->SetPatterns(&spr_ume1[0], ANIM_COUNT, true);
       }
       else if (current_sequence == Sequence::WhiteUme)
       {
-        if (sp[i]->id>=10) sp[i]->active = false;
+        if (sp[i]->id>=UME_COUNT) sp[i]->active = false;
         else sp[i]->SetPatterns(&spr_ume2[0], ANIM_COUNT, true);
       }
       else if (current_sequence == Sequence::Sakura)
@@ -188,7 +226,7 @@ void loop() {
       }
       else
       {
-        if (sp[i]->id>=10) sp[i]->active = false;
+        if (sp[i]->id>=UME_COUNT) sp[i]->active = false;
       }
     }
   }
@@ -200,16 +238,24 @@ void loop() {
     sp[i]->Draw();
   }
   
-  // ロゴ表示処理
-  if (current_sequence == Sequence::Hippo)
-  {
-    logo_control->MoveAndDraw((float)current_sequence_time / (float)sequence_time_max);
-  }
+  // ロゴ、スペース番号表示処理
+  logo_control->MoveAndDraw();
+  space_control->MoveAndDraw();
   
   // フレームバッファの拡大転送
   //Utility::pushSpriteScaled(&bg, &tft, 0, 0, bg.width(), bg.height());
   Utility::pushSpriteScaledBuffers(&bg, &tft, buf, buf_count);
   tft.endWrite();
+
+  // フレーム時間管理
+  curr = millis(); // 現在時刻を更新
+  curr_micro = micros(); // 現在時刻を取得
+  while (curr < merc)
+  {
+    // あまり時間を消費する
+    curr = millis();
+  }
+  merc += frame_ms; //フレーム管理時計を1フレーム分進める
 }
 
 void draw_bg(TFT_eSprite *target)

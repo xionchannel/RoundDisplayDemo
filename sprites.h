@@ -33,4 +33,9 @@ extern const uint8_t ground_graphic[] PROGMEM;
 extern const uint16_t logo_palette[];
 extern const uint8_t logo_graphic[] PROGMEM;
 
+#define SPACE_WIDTH 100
+#define SPACE_HEIGHT 45
+extern const uint16_t space_palette[];
+extern const uint8_t space_graphic[] PROGMEM;
+
 #endif

@@ -7,20 +7,71 @@ Logo::Logo(TFT_eSprite* sprite, TFT_eSprite* draw_target)
 {
   _sprite = sprite;
   _draw_target = draw_target;
+  _width = sprite->width();
+  _height = sprite->height();
+
+  _fade_mode = LogoFadeMode::None;
+
+  is_circle = true;
+  is_rainbow = true;
+  sat = 0.7f;
+  value = 1.0f;
+  _hue = 0.0f;
 }
 
 // ロゴの色変化と描画
-void Logo::MoveAndDraw(float time_percent)
+void Logo::MoveAndDraw()
 {
-  float hue = fmod(time_percent * LOGO_RAINBOW_COUNT, 1.0f);
-  float alpha = 1.0f;
-  if (time_percent < 0.25f) alpha = time_percent / 0.25f;
-  else if (time_percent > 0.75f) alpha = (1.0f - time_percent) / 0.25f;
-  if (alpha > 1.0f) alpha = 1.0f;
-  uint16_t c = HSVToColor(hue, 0.7f, 1.0f);
+  uint16_t c;
+  if (is_rainbow)
+  {
+    _hue += LOGO_RAINBOW_SPEED;
+    if (_hue > 1.0) _hue -= 1.0;
+    c = HSVToColor(_hue, sat, value);
+  }
+  else
+  {
+    c = color565(value, value, value);
+  }
 
-  //Utility::pushSprite4ToSpriteBlended(_sprite, _draw_target, ((SCREEN_WIDTH/2)-LOGO_WIDTH)/2+1, ((SCREEN_HEIGHT/2)-LOGO_HEIGHT)/2, c, LOGO_ALPHA * alpha);
-  Utility::pushSprite4ToSpriteCircleBlended(_sprite, _draw_target, ((SCREEN_WIDTH/2)-LOGO_WIDTH)/2+1, ((SCREEN_HEIGHT/2)-LOGO_HEIGHT)/2, c, LOGO_ALPHA * alpha, LOGO_WIDTH/2);
+  float alpha = 0.0f;
+  if (_fade_mode == LogoFadeMode::FadeIn)
+  {
+    _current_fade_count++;
+    if (_current_fade_count > LOGO_FADE_TIME) _current_fade_count = LOGO_FADE_TIME;
+    alpha = (float)_current_fade_count / LOGO_FADE_TIME;
+  }
+  else if (_fade_mode == LogoFadeMode::FadeOut)
+  {
+    _current_fade_count++;
+    if (_current_fade_count > LOGO_FADE_TIME) _current_fade_count = LOGO_FADE_TIME;
+    alpha = 1.0 - ((float)_current_fade_count / LOGO_FADE_TIME);
+  }
+  if (alpha <= 0.0f) return;
+
+  if (is_circle)
+  {
+    Utility::pushSprite4ToSpriteCircleBlended(_sprite, _draw_target, ((SCREEN_WIDTH/2)-_width)/2+1, ((SCREEN_HEIGHT/2)-_height)/2, c, LOGO_ALPHA * alpha, _width/2);
+  }
+  else
+  {
+    Utility::pushSprite4ToSpriteBlended(_sprite, _draw_target, ((SCREEN_WIDTH/2)-_width)/2+1, ((SCREEN_HEIGHT/2)-_height)/2, c, LOGO_ALPHA * alpha);
+  }
+}
+
+// フェード開始指定
+void Logo::StartFade(bool is_fade_in)
+{
+  if (is_fade_in)
+  {
+    _fade_mode = LogoFadeMode::FadeIn;
+    _current_fade_count = -LOGO_FADE_TIME;
+  }
+  else
+  {
+    _fade_mode = LogoFadeMode::FadeOut;
+    _current_fade_count = 0;
+  }
 }
 
 // HSV指定で色を作成

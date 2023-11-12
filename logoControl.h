@@ -8,17 +8,37 @@
 #define _LOGO_
 
 #define LOGO_ALPHA  0.75f
-#define LOGO_RAINBOW_COUNT 3
+#define LOGO_RAINBOW_SPEED 0.025f
+
+#define LOGO_FADE_TIME 30.0f
+
+enum LogoFadeMode
+{
+  None = 0,
+  FadeIn,
+  FadeOut
+};
 
 class Logo
 {
 public:
+  bool is_circle;
+  bool is_rainbow;
+  float sat;
+  float value;
+
   Logo(TFT_eSprite* sprite, TFT_eSprite* draw_target);
-  void MoveAndDraw(float time_percent);
+  void MoveAndDraw();
+  void StartFade(bool is_fade_in);
 
 private:
   TFT_eSprite* _draw_target;
   TFT_eSprite* _sprite;
+  int32_t _width;
+  int32_t _height;
+  int32_t _current_fade_count;
+  LogoFadeMode _fade_mode;
+  float _hue;
 
   uint16_t HSVToColor(const float hue, const float sat, const float value);
   uint16_t color565(float r_, float g_, float b_);
