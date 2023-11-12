@@ -15,7 +15,9 @@ Logo::Logo(TFT_eSprite* sprite, TFT_eSprite* draw_target)
   y_offset = 0;
   x_offset = 0;
   is_circle = true;
-  is_rainbow = true;
+  is_rainbow = false;
+  is_fixed_color = true;
+  fixed_color = TFT_WHITE;
   sat = 0.7f;
   value = 1.0f;
   _hue = 0.0f;
@@ -30,6 +32,10 @@ void Logo::MoveAndDraw()
     _hue += LOGO_RAINBOW_SPEED;
     if (_hue > 1.0) _hue -= 1.0;
     c = HSVToColor(_hue, sat, value);
+  }
+  else if (is_fixed_color)
+  {
+    c = fixed_color;
   }
   else
   {

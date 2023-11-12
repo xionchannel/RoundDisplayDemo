@@ -24,6 +24,8 @@ class Logo
 public:
   bool is_circle;
   bool is_rainbow;
+  bool is_fixed_color;
+  uint16_t fixed_color;
   float sat;
   float value;
   int32_t y_offset;

@@ -30,6 +30,8 @@ TFT_eSprite spr_bg = TFT_eSprite(&tft); // 背景
 TFT_eSprite spr_logo = TFT_eSprite(&tft); // サークルロゴ
 TFT_eSprite spr_space = TFT_eSprite(&tft);  // スペース番号
 
+bool prev_touched = false;
+
 int32_t sequence_time_max = 200;
 int32_t current_sequence_time = 50;
 
@@ -71,6 +73,8 @@ void setup(void) {
     spr_logo.pushImage(0, 0, LOGO_WIDTH, LOGO_HEIGHT, (uint16_t*)logo_graphic);
     logo_control = new Logo(&spr_logo, &bg);
     logo_control->x_offset = 1;
+    logo_control->is_fixed_color = true;
+    logo_control->fixed_color = tft.color565(240, 128, 255);
   }
 
   // スペース番号の初期化
@@ -157,8 +161,13 @@ void loop() {
   }
   bool force_to_next = (active_count<2 && !respawn); // Hippoの前後はアクティブ数が少なくなれば次シーケンスへ強制遷移
 
+  // タッチ判別
+  bool now_touched = chsc6x_is_pressed();
+  bool is_touched = false;
+  if (!prev_touched && now_touched) is_touched = true;
+  prev_touched = now_touched;
+
   // シーケンス遷移処理
-  bool is_touched = chsc6x_is_pressed();
   current_sequence_time--;
   if (current_sequence_time <= 0 || force_to_next || is_touched)
   {
@@ -181,7 +190,8 @@ void loop() {
 
   // 描画処理ここから
   tft.startWrite();
-  draw_bg(&bg);
+  if (is_touched) bg.fillRect(0, 0, bg.width(), bg.height(), TFT_BLACK);
+  else draw_bg(&bg);
 
   // スプライトの処理
   for (uint8_t i=0; i<COUNT; i++)
