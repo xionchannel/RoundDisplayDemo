@@ -12,6 +12,8 @@ Logo::Logo(TFT_eSprite* sprite, TFT_eSprite* draw_target)
 
   _fade_mode = LogoFadeMode::None;
 
+  y_offset = 0;
+  x_offset = 0;
   is_circle = true;
   is_rainbow = true;
   sat = 0.7f;
@@ -51,11 +53,11 @@ void Logo::MoveAndDraw()
 
   if (is_circle)
   {
-    Utility::pushSprite4ToSpriteCircleBlended(_sprite, _draw_target, ((SCREEN_WIDTH/2)-_width)/2+1, ((SCREEN_HEIGHT/2)-_height)/2, c, LOGO_ALPHA * alpha, _width/2);
+    Utility::pushSprite4ToSpriteCircleBlended(_sprite, _draw_target, ((SCREEN_WIDTH/2)-_width)/2+x_offset, ((SCREEN_HEIGHT/2)-_height)/2+y_offset, c, LOGO_ALPHA * alpha, _width/2);
   }
   else
   {
-    Utility::pushSprite4ToSpriteBlended(_sprite, _draw_target, ((SCREEN_WIDTH/2)-_width)/2+1, ((SCREEN_HEIGHT/2)-_height)/2, c, LOGO_ALPHA * alpha);
+    Utility::pushSprite4ToSpriteBlended(_sprite, _draw_target, ((SCREEN_WIDTH/2)-_width)/2+x_offset, ((SCREEN_HEIGHT/2)-_height)/2+y_offset, c, LOGO_ALPHA * alpha);
   }
 }
 

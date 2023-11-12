@@ -66,6 +66,7 @@ void setup(void) {
     spr_logo.createPalette(logo_palette);
     spr_logo.pushImage(0, 0, LOGO_WIDTH, LOGO_HEIGHT, (uint16_t*)logo_graphic);
     logo_control = new Logo(&spr_logo, &bg);
+    logo_control->x_offset = 1;
   }
 
   // スペース番号の初期化
@@ -77,6 +78,7 @@ void setup(void) {
     space_control = new Logo(&spr_space, &bg);
     space_control->is_circle = false;
     space_control->is_rainbow = false;
+    space_control->y_offset = -1;
 
     space_control->StartFade(true);
   }

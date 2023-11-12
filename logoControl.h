@@ -26,6 +26,8 @@ public:
   bool is_rainbow;
   float sat;
   float value;
+  int32_t y_offset;
+  int32_t x_offset;
 
   Logo(TFT_eSprite* sprite, TFT_eSprite* draw_target);
   void MoveAndDraw();
