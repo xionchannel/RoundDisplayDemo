@@ -7,7 +7,6 @@ Logo::Logo(TFT_eSprite* sprite, TFT_eSprite* draw_target)
 {
   _sprite = sprite;
   _draw_target = draw_target;
-  _hue = 0.0;
 }
 
 // ロゴの色変化と描画
@@ -20,7 +19,8 @@ void Logo::MoveAndDraw(float time_percent)
   if (alpha > 1.0f) alpha = 1.0f;
   uint16_t c = HSVToColor(hue, 0.7f, 1.0f);
 
-  Utility::pushSprite4ToSpriteBlended(_sprite, _draw_target, ((SCREEN_WIDTH/2)-LOGO_WIDTH)/2+1, ((SCREEN_HEIGHT/2)-LOGO_HEIGHT)/2, c, LOGO_ALPHA * alpha);
+  //Utility::pushSprite4ToSpriteBlended(_sprite, _draw_target, ((SCREEN_WIDTH/2)-LOGO_WIDTH)/2+1, ((SCREEN_HEIGHT/2)-LOGO_HEIGHT)/2, c, LOGO_ALPHA * alpha);
+  Utility::pushSprite4ToSpriteCircleBlended(_sprite, _draw_target, ((SCREEN_WIDTH/2)-LOGO_WIDTH)/2+1, ((SCREEN_HEIGHT/2)-LOGO_HEIGHT)/2, c, LOGO_ALPHA * alpha, LOGO_WIDTH/2);
 }
 
 // HSV指定で色を作成

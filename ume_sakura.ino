@@ -15,6 +15,9 @@ uint16_t bg_color = TFT_BLACK;
 Chara* sp[COUNT];
 Logo* logo_control;
 
+CopyBuffer** buf;
+int32_t buf_count;
+
 #define ANIM_COUNT 32
 TFT_eSprite** spr_ume1;
 TFT_eSprite** spr_ume2;
@@ -101,6 +104,9 @@ void setup(void) {
       sp[i]->active = false;
     }
   }
+
+  buf = Utility::calcCircleBuffers(SCREEN_CENTER_X, SCREEN_CENTER_X);
+  buf_count = SCREEN_CENTER_X * 2;
 
   delay(500);
 
@@ -201,7 +207,8 @@ void loop() {
   }
   
   // フレームバッファの拡大転送
-  Utility::pushSpriteScaled(&bg, &tft, 0, 0, bg.width(), bg.height());
+  //Utility::pushSpriteScaled(&bg, &tft, 0, 0, bg.width(), bg.height());
+  Utility::pushSpriteScaledBuffers(&bg, &tft, buf, buf_count);
   tft.endWrite();
 }
 

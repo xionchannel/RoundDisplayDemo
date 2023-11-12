@@ -7,7 +7,7 @@
 #ifndef _LOGO_
 #define _LOGO_
 
-#define LOGO_ALPHA  0.5f
+#define LOGO_ALPHA  0.75f
 #define LOGO_RAINBOW_COUNT 3
 
 class Logo
@@ -19,7 +19,6 @@ public:
 private:
   TFT_eSprite* _draw_target;
   TFT_eSprite* _sprite;
-  float _hue;
 
   uint16_t HSVToColor(const float hue, const float sat, const float value);
   uint16_t color565(float r_, float g_, float b_);

@@ -95,18 +95,20 @@ void Utility::pushSpriteScaled(TFT_eSprite* spr_, TFT_eSPI* tft_, const int32_t 
 // 円形コピー用のラインバッファサイズを計算して確保して返す
 CopyBuffer** Utility::calcCircleBuffers(const int32_t center_, const int32_t range_)
 {
-  CopyBuffer** b = new CopyBuffer*[range_];
-  for (uint32_t i=0; i<range_; i++)
+  int32_t size = range_ * 2;
+  CopyBuffer** b = new CopyBuffer*[size];
+  for (uint32_t i=0; i<size; i++)
   {
     b[i] = new CopyBuffer();
     b[i]->x = -1;
-    for (uint32_t j=0; j<range_; j++)
+    b[i]->width = 0;
+    for (uint32_t j=0; j<size; j++)
     {
       // 円の交差をやって x, width を記録する
-      int32_t xx = j-center_;
-      int32_t yy = i-center_;
+      int32_t xx = j-center_ + 1;
+      int32_t yy = i-center_ + 1;
       int32_t dist = xx*xx + yy*yy;
-      if (dist <= range_*range_)
+      if (dist < range_*range_)
       {
         // 円の中
         if (b[i]->x < 0) b[i]->x = j;
@@ -255,6 +257,31 @@ void Utility::pushSprite4ToSpriteBlended(TFT_eSprite* src_, TFT_eSprite* dst_, c
       uint16_t rpd = dst_->readPixel(x+j, y+i);
       //dst_->drawPixel(x+j, y+i, src_->alphaBlend(af * 255, color_, rpd));
       dst_->drawPixel(x+j, y+i, addColor(scaleColor(color_, af), rpd));
+    }
+  }
+}
+
+// 4bitから16bitへSpriteを円形にブレンドする
+void Utility::pushSprite4ToSpriteCircleBlended(TFT_eSprite* src_, TFT_eSprite* dst_, const int32_t x, const int32_t y, const uint16_t color_, const float alpha_, const int32_t range_)
+{
+  int32_t center_x = src_->width()/2;
+  int32_t center_y = src_->height()/2;
+  for (uint32_t i=0; i<src_->height(); i++)
+  {
+    for (uint32_t j=0; j<src_->width(); j++)
+    {
+      // 円の外はスキップする
+      int32_t dx = i - center_x + 1;
+      int32_t dy = j - center_y + 1;
+      if (dx*dx+dy*dy > range_*range_) continue;
+
+      uint16_t rps = src_->readPixel(j, i);
+      uint8_t a = (rps >> 8) & 0xF8; a |= (a >> 5);
+      if (a == 0) continue;
+      float af = alpha_ * (((float)a)/255.0);
+      uint16_t rpd = dst_->readPixel(x+j, y+i);
+      dst_->drawPixel(x+j, y+i, src_->alphaBlend(af * 255, color_, rpd));
+      //dst_->drawPixel(x+j, y+i, addColor(scaleColor(color_, af), rpd));
     }
   }
 }
