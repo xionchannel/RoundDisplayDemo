@@ -1,5 +1,6 @@
 
 //#include <TFT_eSPI.h>                 // Include the graphics library (this includes the sprite functions)
+#include "touch.h"
 #include "sprites.h"
 #include "chara.h"
 #include "utility.h"
@@ -58,6 +59,9 @@ void setup(void) {
   tft.init();
   tft.setRotation(0);
   tft.fillScreen(TFT_BLACK);
+
+  // タッチの初期化
+  lv_xiao_touch_init();
 
   // ロゴの初期化
   {
@@ -154,8 +158,9 @@ void loop() {
   bool force_to_next = (active_count<2 && !respawn); // Hippoの前後はアクティブ数が少なくなれば次シーケンスへ強制遷移
 
   // シーケンス遷移処理
+  bool is_touched = chsc6x_is_pressed();
   current_sequence_time--;
-  if (current_sequence_time <= 0 || force_to_next)
+  if (current_sequence_time <= 0 || force_to_next || is_touched)
   {
     // シーケンスの変化の瞬間の処理
     current_sequence_time = sequence_time_max;
