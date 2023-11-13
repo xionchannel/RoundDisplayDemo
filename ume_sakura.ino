@@ -6,6 +6,8 @@
 #include "utility.h"
 #include "logoControl.h"
 
+//#define TOUCH_SKIP_PHASE  // これを有効にしたらタッチ時にフェイズをスキップする
+
 TFT_eSPI tft = TFT_eSPI(SCREEN_WIDTH, SCREEN_HEIGHT);         // Create object "tft"
 
 TFT_eSprite bg = TFT_eSprite(&tft); // bg buffer
@@ -166,10 +168,22 @@ void loop() {
   bool is_touched = false;
   if (!prev_touched && now_touched) is_touched = true;
   prev_touched = now_touched;
+  float touch_x, touch_y;
+  if (is_touched)
+  {
+    lv_coord_t tx, ty;
+    chsc6x_get_xy(&tx, &ty);
+    touch_x = (float)tx/2.0f;
+    touch_y = (float)ty/2.0f;
+  }
 
   // シーケンス遷移処理
   current_sequence_time--;
+  #ifdef TOUCH_SKIP_PHASE
   if (current_sequence_time <= 0 || force_to_next || is_touched)
+  #else
+  if (current_sequence_time <= 0 || force_to_next)
+  #endif
   {
     // シーケンスの変化の瞬間の処理
     current_sequence_time = sequence_time_max;
@@ -190,8 +204,12 @@ void loop() {
 
   // 描画処理ここから
   tft.startWrite();
+  #ifdef TOUCH_SKIP_PHASE
   if (is_touched) bg.fillRect(0, 0, bg.width(), bg.height(), TFT_BLACK);
   else draw_bg(&bg);
+  #else
+  draw_bg(&bg);
+  #endif
 
   // スプライトの処理
   for (uint8_t i=0; i<COUNT; i++)
@@ -214,6 +232,7 @@ void loop() {
     }
 
     // スプライト移動処理
+    if (is_touched) sp[i]->Touched(touch_x, touch_y);
     bool out_of_screen = sp[i]->Move(respawn);
     if (!out_of_screen)
     {
