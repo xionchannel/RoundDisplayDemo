@@ -18,6 +18,9 @@
 #define MOVESPEED_HIPPO 2.0
 #define HIPPO_ANIM_SPEED 3
 
+#define TOUCH_ACCEL_SCALE 0.1f
+#define TOUCH_ACCEL_MAX 6.0f
+
 class Chara
 {
 public:
@@ -34,6 +37,7 @@ public:
   void SetPatterns(TFT_eSprite** sprites, int32_t count, bool is_flower_);
   bool Move(bool respawn);
   void Draw();
+  void Touched(float x_, float y_);
 
   static TFT_eSprite** CreateFlowerSprites(TFT_eSPI *tft, const uint16_t* palette, const uint16_t* graphic, const uint16_t transp, const uint16_t width, const uint16_t height, const uint16_t count);
   static TFT_eSprite** CreatePatternSprites(TFT_eSPI *tft, const uint16_t* palette, const uint16_t* graphic, const uint16_t transp, const uint16_t width, const uint16_t height, const uint16_t xcount, const uint16_t ycount);
@@ -51,6 +55,8 @@ private:
   float _accel_y;
   float _time_count1;
   float _time_count2;
+  float _accel_x_touch;
+  float _accel_y_touch;
 
   bool MoveFlower(bool respawn);
   bool MoveHippo(bool respawn);

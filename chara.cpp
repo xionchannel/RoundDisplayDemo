@@ -100,6 +100,28 @@ Chara::Chara(TFT_eSprite** sprites, int32_t count, TFT_eSprite *draw_target, uin
   _accel_y = random(MOVESPEED * 2.0) + 1.0;
   _time_count1 = random(6.28f);
   _time_count2 = random(6.28f);
+
+  _accel_x_touch = 0.0f;
+  _accel_y_touch = 0.0f;
+}
+
+// 指定の座標にタッチされたので、弾き飛ばされる加速を与える
+void Chara::Touched(float x_, float y_)
+{
+  // タッチ座標を中心として、近いほど加速度が強いようにする
+  float ax = (x - x_) / SCREEN_WIDTH;
+  float sign_x = (ax>0)-(ax<0);
+  float abs_x = abs(ax);
+  if (abs_x > 1.0f) abs_x = 0.0f;
+  else abs_x = 1.0f - abs_x;
+  _accel_x_touch = abs_x * sign_x * TOUCH_ACCEL_MAX;
+
+  float ay = (y - y_) / SCREEN_HEIGHT;
+  float sign_y = (ay>0)-(ay<0);
+  float abs_y = abs(ay);
+  if (abs_y > 1.0f) abs_y = 0.0f;
+  else abs_y = 1.0f - abs_y;
+  _accel_y_touch = abs_y * sign_y * TOUCH_ACCEL_MAX;
 }
 
 // スプライトパターンを差し替える
@@ -131,6 +153,15 @@ void Chara::SetPatterns(TFT_eSprite** sprites, int32_t count, bool is_flower_)
 // 移動、返り値は画面外にいる場合trueを返す
 bool Chara::Move(bool respawn)
 {
+  // タッチ加速がある場合は処理する
+  if (abs(_accel_x_touch) > 0.001f || abs(_accel_y_touch) > 0.001f)
+  {
+    x += _accel_x_touch;
+    y += _accel_y_touch;
+    _accel_x_touch *= TOUCH_ACCEL_SCALE;
+    _accel_y_touch *= TOUCH_ACCEL_SCALE;
+  }
+
   if (is_flower)
   {
     return MoveFlower(respawn);
