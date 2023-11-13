@@ -18,8 +18,8 @@
 #define MOVESPEED_HIPPO 2.0
 #define HIPPO_ANIM_SPEED 3
 
-#define TOUCH_ACCEL_SCALE 0.1f
-#define TOUCH_ACCEL_MAX 6.0f
+#define TOUCH_ACCEL_SCALE 0.9f
+#define TOUCH_ACCEL_MAX 8.0f
 
 class Chara
 {

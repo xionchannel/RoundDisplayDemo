@@ -279,6 +279,9 @@ bool Chara::MoveHippo(bool respawn)
 
 void Chara::SpawnFlower()
 {
+  _accel_x_touch = 0.0f;
+  _accel_y_touch = 0.0f;
+
   y = SCREEN_YMIN;
   x = random(SCREEN_WIDTH/2 - SP_WIDTH);
   _speed = random(MOVESPEED) + 1;
@@ -290,6 +293,9 @@ void Chara::SpawnFlower()
 
 void Chara::SpawnHippo()
 {
+  _accel_x_touch = 0.0f;
+  _accel_y_touch = 0.0f;
+
   float flagx = random(2)>0 ? -1.0f : 1.0f;
   float flagy = random(2)>0 ? -1.0f : 1.0f;
   if (x <= SCREEN_XMIN)
