@@ -5,6 +5,7 @@
 # ライブラリ
 - TFT_eSPI 2.5.33
 - lvgl 8.3.10
+- Seeed_Arduino_Round_display
 
 # ボードライブラリ
 - esp32 2.0.11
