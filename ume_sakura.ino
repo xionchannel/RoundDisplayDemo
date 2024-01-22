@@ -76,7 +76,7 @@ void setup(void) {
     logo_control = new Logo(&spr_logo, &bg);
     logo_control->x_offset = 1;
     logo_control->is_fixed_color = true;
-    logo_control->fixed_color = tft.color565(240, 128, 255);
+    logo_control->fixed_color = tft.color565(255, 255, 255);
   }
 
   // スペース番号の初期化
@@ -99,7 +99,9 @@ void setup(void) {
     spt.setColorDepth(4);
     spt.createSprite(SP_WIDTH, SP_HEIGHT);
     spt.createPalette(ground_palette);
-    Utility::createPaletteMultiply(&spt, 0.4f, 0.2f, 0.4f);
+    spt.setPaletteColor(0, tft.color565(255, 120, 130));
+    spt.setPaletteColor(1, tft.color565(255, 80, 130));
+    //Utility::createPaletteMultiply(&spt, 0.4f, 0.2f, 0.4f);
     spt.pushImage(0, 0, SP_WIDTH, SP_HEIGHT, (uint16_t*)ground_graphic);
 
     spr_bg.setColorDepth(16);
@@ -188,6 +190,12 @@ void loop() {
     // シーケンスの変化の瞬間の処理
     current_sequence_time = sequence_time_max;
     current_sequence = static_cast<Sequence>((static_cast<uint8_t>(current_sequence) + 1) % static_cast<uint8_t>(Sequence::Max));
+
+    if (current_sequence == Sequence::Sakura)
+    {
+      // 桜の場合は強制的に次に移る
+      current_sequence = static_cast<Sequence>((static_cast<uint8_t>(current_sequence) + 1) % static_cast<uint8_t>(Sequence::Max));
+    }
 
     switch(current_sequence)
     {
