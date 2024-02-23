@@ -1,3 +1,4 @@
+#include "define.h"
 #include "sprites.h"
 
 /* This was generated using a script based on the SparkFun BMPtoArray python script

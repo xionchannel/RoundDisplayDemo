@@ -1,5 +1,6 @@
 // chara.cpp
 // chara control class
+#include "define.h"
 #include "chara.h"
 
 // 花スプライトリストの初期化 （指定の数分回転したパターンを生成する）

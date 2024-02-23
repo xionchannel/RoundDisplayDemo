@@ -1,5 +1,7 @@
 
 //#include <TFT_eSPI.h>                 // Include the graphics library (this includes the sprite functions)
+
+#include "define.h"
 #include "touch.h"
 #include "sprites.h"
 #include "chara.h"
@@ -7,6 +9,7 @@
 #include "logoControl.h"
 
 //#define TOUCH_SKIP_PHASE  // これを有効にしたらタッチ時にフェイズをスキップする
+//#define DISP_TOUCH // これを有効にしたらタッチ位置を表示する
 
 TFT_eSPI tft = TFT_eSPI(SCREEN_WIDTH, SCREEN_HEIGHT);         // Create object "tft"
 
@@ -74,7 +77,7 @@ void setup(void) {
     spr_logo.createPalette(logo_palette);
     spr_logo.pushImage(0, 0, LOGO_WIDTH, LOGO_HEIGHT, (uint16_t*)logo_graphic);
     logo_control = new Logo(&spr_logo, &bg);
-    logo_control->x_offset = 1;
+    logo_control->x_offset = 3;
     logo_control->is_fixed_color = true;
     logo_control->fixed_color = tft.color565(255, 255, 255);
   }
@@ -88,7 +91,8 @@ void setup(void) {
     space_control = new Logo(&spr_space, &bg);
     space_control->is_circle = false;
     space_control->is_rainbow = false;
-    space_control->y_offset = -1;
+    space_control->x_offset = 2;
+    space_control->y_offset = -4;
 
     space_control->StartFade(true);
   }
@@ -177,6 +181,11 @@ void loop() {
     chsc6x_get_xy(&tx, &ty);
     touch_x = (float)tx/2.0f;
     touch_y = (float)ty/2.0f;
+    #ifdef TURN90
+      float _x = touch_x;
+      touch_x = tft.width()/2 - touch_y;
+      touch_y = _x;
+    #endif
   }
 
   // シーケンス遷移処理
@@ -285,6 +294,11 @@ void loop() {
   // ロゴ、スペース番号表示処理
   logo_control->MoveAndDraw();
   space_control->MoveAndDraw();
+
+  #ifdef DISP_TOUCH
+  // タッチ位置デバッグ表示
+  bg.drawRect(touch_x-1,touch_y-1,3,3, TFT_BLACK);
+  #endif
   
   // フレームバッファの拡大転送
   //Utility::pushSpriteScaled(&bg, &tft, 0, 0, bg.width(), bg.height());

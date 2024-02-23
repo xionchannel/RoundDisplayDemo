@@ -1,5 +1,6 @@
 // logoControl.h
 // logo control class
+#include "define.h"
 #include "logoControl.h"
 
 // 初期化

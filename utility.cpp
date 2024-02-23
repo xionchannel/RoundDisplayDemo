@@ -1,6 +1,7 @@
 // utility.cpp
 // TFT_eSprite用のユーティリティ関数群
 
+#include "define.h"
 #include "utility.h"
 
 // カラーをr,g,bにして返す
@@ -133,18 +134,33 @@ void Utility::pushSpriteScaledBuffers(TFT_eSprite* spr_, TFT_eSPI* tft_, CopyBuf
     uint16_t line_buffer[size];
     for (uint32_t j=0; j<b->width; j++)
     {
-      uint16_t rp = spr_->readPixel(j+b->x, i);
+      #ifdef TURN90
+      int x = b->width - j;
+      #else
+      int x = j;
+      #endif
+      uint16_t rp = spr_->readPixel(x+b->x, i);
       rp = (rp>>8 | rp<<8);
       line_buffer[j*2] = line_buffer[j*2+1] = rp;
     }
-    #if true
-    tft_->pushImage(b->x*2, i*2, size, 1, line_buffer);
-    tft_->pushImage(b->x*2, i*2+1, size, 1, line_buffer);
+    #ifdef TURN90
+      // 90度回転してコピーする
+      //int y = count_*2 - i*2;
+      int y = i*2;
+      tft_->setWindow(y, b->x*2, y, b->x*2+size-1);
+      tft_->pushPixels(line_buffer, size);
+      tft_->setWindow(y+1, b->x*2, y+1, b->x*2+size-1);
+      tft_->pushPixels(line_buffer, size);
     #else
-    tft_->setWindow(b->x*2, i*2, b->x*2+size-1, i*2);
-    tft_->pushPixels(line_buffer, size);
-    tft_->setWindow(b->x*2, i*2+1, b->x*2+size-1, i*2+1);
-    tft_->pushPixels(line_buffer, size);
+      #if true
+        tft_->pushImage(b->x*2, i*2, size, 1, line_buffer);
+        tft_->pushImage(b->x*2, i*2+1, size, 1, line_buffer);
+      #else
+        tft_->setWindow(b->x*2, i*2, b->x*2+size-1, i*2);
+        tft_->pushPixels(line_buffer, size);
+        tft_->setWindow(b->x*2, i*2+1, b->x*2+size-1, i*2+1);
+        tft_->pushPixels(line_buffer, size);
+      #endif
     #endif
   }
 }
