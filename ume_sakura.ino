@@ -103,9 +103,9 @@ void setup(void) {
     spt.setColorDepth(4);
     spt.createSprite(SP_WIDTH, SP_HEIGHT);
     spt.createPalette(ground_palette);
-    spt.setPaletteColor(0, tft.color565(255, 120, 130));
-    spt.setPaletteColor(1, tft.color565(255, 80, 130));
-    //Utility::createPaletteMultiply(&spt, 0.4f, 0.2f, 0.4f);
+    //spt.setPaletteColor(0, tft.color565(255, 120, 130));
+    //spt.setPaletteColor(1, tft.color565(255, 80, 130));
+    Utility::createPaletteMultiply(&spt, 0.4f, 0.2f, 0.4f);
     spt.pushImage(0, 0, SP_WIDTH, SP_HEIGHT, (uint16_t*)ground_graphic);
 
     spr_bg.setColorDepth(16);
@@ -200,11 +200,13 @@ void loop() {
     current_sequence_time = sequence_time_max;
     current_sequence = static_cast<Sequence>((static_cast<uint8_t>(current_sequence) + 1) % static_cast<uint8_t>(Sequence::Max));
 
+    #ifdef SKIP_SAKURA
     if (current_sequence == Sequence::Sakura)
     {
       // 桜の場合は強制的に次に移る
       current_sequence = static_cast<Sequence>((static_cast<uint8_t>(current_sequence) + 1) % static_cast<uint8_t>(Sequence::Max));
     }
+    #endif
 
     switch(current_sequence)
     {
